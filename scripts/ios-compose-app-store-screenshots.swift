@@ -4,17 +4,28 @@ import AppKit
 import Foundation
 
 private enum Artwork {
-    static let panelWidth = 1_284
-    static let height = 2_778
+    static let panelWidth = 1_320
+    static let height = 2_868
     static let panelCount = 3
     static let width = panelWidth * panelCount
-    static let padding: CGFloat = 96
+    static let horizontalScale = CGFloat(panelWidth) / 1_284
+    static let verticalScale = CGFloat(height) / 2_778
+    static let horizontalPadding = x(96)
+    static let verticalPadding = y(96)
 
     static let background = NSColor(calibratedRed: 0.992, green: 0.996, blue: 1, alpha: 1)
     static let ink = NSColor(calibratedRed: 0.035, green: 0.102, blue: 0.180, alpha: 1)
     static let muted = NSColor(calibratedRed: 0.220, green: 0.275, blue: 0.330, alpha: 1)
     static let logoBlueText = NSColor(calibratedRed: 0.020, green: 0.470, blue: 0.650, alpha: 1)
     static let logoYellowText = NSColor(calibratedRed: 0.640, green: 0.410, blue: 0.000, alpha: 1)
+
+    static func x(_ value: CGFloat) -> CGFloat {
+        value * horizontalScale
+    }
+
+    static func y(_ value: CGFloat) -> CGFloat {
+        value * verticalScale
+    }
 }
 
 private struct Arguments {
@@ -102,13 +113,13 @@ private struct Composer {
 
         drawMessages()
 
-        let widgetWidth: CGFloat = 2_376
-        let widgetHeight: CGFloat = 1_120
+        let widgetWidth = Artwork.x(2_376)
+        let widgetHeight = Artwork.y(1_120)
         drawWidget(
             image: waveCapture,
             destinationFromTop: CGRect(
-                x: Artwork.padding,
-                y: Artwork.padding,
+                x: Artwork.horizontalPadding,
+                y: Artwork.verticalPadding,
                 width: widgetWidth,
                 height: widgetHeight
             )
@@ -116,8 +127,8 @@ private struct Composer {
         drawWidget(
             image: catCapture,
             destinationFromTop: CGRect(
-                x: CGFloat(Artwork.width) - Artwork.padding - widgetWidth,
-                y: CGFloat(Artwork.height) - Artwork.padding - widgetHeight,
+                x: CGFloat(Artwork.width) - Artwork.horizontalPadding - widgetWidth,
+                y: CGFloat(Artwork.height) - Artwork.verticalPadding - widgetHeight,
                 width: widgetWidth,
                 height: widgetHeight
             )
@@ -132,20 +143,20 @@ private struct Composer {
         )
 
         let names = [
-            "colorinvo-iphone-6-5-01-wallpaper-palette.png",
-            "colorinvo-iphone-6-5-02-decorations.png",
-            "colorinvo-iphone-6-5-03-scanner-widget.png",
+            "colorinvo-iphone-6-9-01-wallpaper-palette.png",
+            "colorinvo-iphone-6-9-02-decorations.png",
+            "colorinvo-iphone-6-9-03-scanner-widget.png",
         ]
 
         for panel in 0..<Artwork.panelCount {
-            guard let panelImage = representation.cgImage?.cropping(
+            guard let croppedImage = representation.cgImage?.cropping(
                 to: CGRect(
                     x: panel * Artwork.panelWidth,
                     y: 0,
                     width: Artwork.panelWidth,
                     height: Artwork.height
                 )
-            ) else {
+            ), let panelImage = opaqueImage(from: croppedImage) else {
                 throw ComposerError.imageEncodingFailed
             }
 
@@ -166,8 +177,8 @@ private struct Composer {
                 panelIndex: 2,
                 title: "提取桌布配色",
                 subtitle: "載具小工具不再破壞桌布氛圍",
-                titleTop: CGFloat(96),
-                subtitleTop: CGFloat(280),
+                titleTop: Artwork.y(96),
+                subtitleTop: Artwork.y(280),
                 alignment: NSTextAlignment.right,
                 titleAccents: [("桌布配色", Artwork.logoYellowText)],
                 subtitleAccents: [("不再破壞桌布氛圍", Artwork.logoBlueText)]
@@ -176,8 +187,8 @@ private struct Composer {
                 panelIndex: 0,
                 title: "選擇額外裝飾",
                 subtitle: "別擔心，貓貓會保留安全可掃範圍",
-                titleTop: CGFloat(2_376),
-                subtitleTop: CGFloat(2_576),
+                titleTop: Artwork.y(2_376),
+                subtitleTop: Artwork.y(2_576),
                 alignment: NSTextAlignment.left,
                 titleAccents: [("額外裝飾", Artwork.logoYellowText)],
                 subtitleAccents: [("安全可掃", Artwork.logoBlueText)]
@@ -185,26 +196,26 @@ private struct Composer {
         ]
 
         for message in messages {
-            let panelX = CGFloat(message.panelIndex * Artwork.panelWidth) + Artwork.padding
-            let textWidth = CGFloat(Artwork.panelWidth) - Artwork.padding * 2
+            let panelX = CGFloat(message.panelIndex * Artwork.panelWidth) + Artwork.horizontalPadding
+            let textWidth = CGFloat(Artwork.panelWidth) - Artwork.horizontalPadding * 2
             let targetLineWidth = textWidth * 0.85
             let titleFont = fontFitting(
                 message.title,
                 targetWidth: targetLineWidth,
                 weight: .black,
-                minimumSize: 112,
-                maximumSize: 164
+                minimumSize: Artwork.x(112),
+                maximumSize: Artwork.x(164)
             )
             let subtitleFont = fontFitting(
                 message.subtitle,
                 targetWidth: targetLineWidth,
                 weight: .bold,
-                minimumSize: 52,
-                maximumSize: 76
+                minimumSize: Artwork.x(52),
+                maximumSize: Artwork.x(76)
             )
             drawStyledText(
                 message.title,
-                topRect: CGRect(x: panelX, y: message.titleTop, width: textWidth, height: 200),
+                topRect: CGRect(x: panelX, y: message.titleTop, width: textWidth, height: Artwork.y(200)),
                 font: titleFont,
                 color: Artwork.ink,
                 accents: message.titleAccents,
@@ -212,7 +223,7 @@ private struct Composer {
             )
             drawStyledText(
                 message.subtitle,
-                topRect: CGRect(x: panelX, y: message.subtitleTop, width: textWidth, height: 100),
+                topRect: CGRect(x: panelX, y: message.subtitleTop, width: textWidth, height: Artwork.y(100)),
                 font: subtitleFont,
                 color: Artwork.muted,
                 accents: message.subtitleAccents,
@@ -243,13 +254,18 @@ private struct Composer {
 
     private func drawWidget(image: NSImage, destinationFromTop: CGRect) {
         let cornerRadius = destinationFromTop.height * 24 / 155
-        let sourceFromTop = CGRect(x: 120, y: 490, width: 1_044, height: 492)
+        let sourceFromTop = CGRect(
+            x: Artwork.x(120),
+            y: Artwork.y(490),
+            width: Artwork.x(1_044),
+            height: Artwork.y(492)
+        )
         let shape = roundedRect(topRect: destinationFromTop, radius: cornerRadius)
 
         let shadow = NSShadow()
         shadow.shadowColor = NSColor.black.withAlphaComponent(0.13)
-        shadow.shadowBlurRadius = 40
-        shadow.shadowOffset = NSSize(width: 0, height: -18)
+        shadow.shadowBlurRadius = Artwork.y(40)
+        shadow.shadowOffset = NSSize(width: 0, height: -Artwork.y(18))
 
         NSGraphicsContext.saveGraphicsState()
         shadow.set()
@@ -308,6 +324,25 @@ private struct Composer {
 
     private func roundedRect(topRect: CGRect, radius: CGFloat) -> NSBezierPath {
         NSBezierPath(roundedRect: rectFromTop(topRect), xRadius: radius, yRadius: radius)
+    }
+
+    private func opaqueImage(from image: CGImage) -> CGImage? {
+        guard let context = CGContext(
+            data: nil,
+            width: Artwork.panelWidth,
+            height: Artwork.height,
+            bitsPerComponent: 8,
+            bytesPerRow: Artwork.panelWidth * 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else {
+            return nil
+        }
+
+        context.setFillColor(NSColor.white.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: Artwork.panelWidth, height: Artwork.height))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: Artwork.panelWidth, height: Artwork.height))
+        return context.makeImage()
     }
 
     private func rectFromTop(_ rect: CGRect) -> NSRect {
