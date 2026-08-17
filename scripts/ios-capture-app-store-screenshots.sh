@@ -7,8 +7,10 @@ CONFIGURATION="${IOS_CONFIGURATION:-Debug}"
 DERIVED_DATA_PATH="${IOS_DERIVED_DATA_PATH:-$IOS_ROOT_DIR/build/ScreenshotDerivedData}"
 CAPTURE_DIR="${IOS_SCREENSHOT_CAPTURE_DIR:-$IOS_ROOT_DIR/build/AppStoreScreenshotCaptures}"
 OUTPUT_DIR="${IOS_SCREENSHOT_OUTPUT_DIR:-$IOS_ROOT_DIR/assets/screenshots}"
-DEVICE_NAME="${IOS_SCREENSHOT_DEVICE_NAME:-ColorInvo 14 Plus Screenshots}"
-DEVICE_TYPE="${IOS_SCREENSHOT_DEVICE_TYPE:-com.apple.CoreSimulator.SimDeviceType.iPhone-14-Plus}"
+DEVICE_NAME="${IOS_SCREENSHOT_DEVICE_NAME:-iPhone 17 Pro Max}"
+DEVICE_TYPE="${IOS_SCREENSHOT_DEVICE_TYPE:-com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max}"
+EXPECTED_WIDTH="${IOS_SCREENSHOT_EXPECTED_WIDTH:-1320}"
+EXPECTED_HEIGHT="${IOS_SCREENSHOT_EXPECTED_HEIGHT:-2868}"
 RUNTIME="${IOS_SCREENSHOT_RUNTIME:-}"
 SCREENSHOT_WALLPAPER_PATH="${IOS_SCREENSHOT_WALLPAPER_PATH:-}"
 SCREENSHOT_WALLPAPER_PRESET="${IOS_SCREENSHOT_WALLPAPER_PRESET:-ios17-blue-light}"
@@ -120,8 +122,8 @@ capture_png() {
 
     width="$(sips -g pixelWidth "$output_path" | awk '/pixelWidth/ { print $2 }')"
     height="$(sips -g pixelHeight "$output_path" | awk '/pixelHeight/ { print $2 }')"
-    [[ "$width" == "1284" && "$height" == "2778" ]] \
-        || ios_die "Expected a 1284x2778 6.5-inch ASC screenshot, got ${width}x${height}: $output_path"
+    [[ "$width" == "$EXPECTED_WIDTH" && "$height" == "$EXPECTED_HEIGHT" ]] \
+        || ios_die "Expected a ${EXPECTED_WIDTH}x${EXPECTED_HEIGHT} 6.9-inch ASC screenshot, got ${width}x${height}: $output_path"
 }
 
 if [[ "$CONFIGURATION" != "Debug" ]]; then
@@ -166,8 +168,8 @@ xcrun simctl status_bar "$DEVICE_ID" override \
     --batteryState charged \
     --batteryLevel 100 >/dev/null
 
-CAT_CAPTURE="$CAPTURE_DIR/colorinvo-iphone-6-5-widget-cat.png"
-WAVE_CAPTURE="$CAPTURE_DIR/colorinvo-iphone-6-5-widget-wave.png"
+CAT_CAPTURE="$CAPTURE_DIR/colorinvo-iphone-6-9-widget-cat.png"
+WAVE_CAPTURE="$CAPTURE_DIR/colorinvo-iphone-6-9-widget-wave.png"
 
 echo "Capturing cat decoration source..."
 launch_for_screenshot "$DEVICE_ID" widget-cat
@@ -185,7 +187,7 @@ swift "$IOS_ROOT_DIR/scripts/ios-compose-app-store-screenshots.swift" \
     --wave "$WAVE_CAPTURE" \
     --output-dir "$OUTPUT_DIR"
 
-echo "Generated connected 6.5-inch App Store screenshots:"
-echo "  $OUTPUT_DIR/colorinvo-iphone-6-5-01-wallpaper-palette.png"
-echo "  $OUTPUT_DIR/colorinvo-iphone-6-5-02-decorations.png"
-echo "  $OUTPUT_DIR/colorinvo-iphone-6-5-03-scanner-widget.png"
+echo "Generated connected 6.9-inch App Store screenshots:"
+echo "  $OUTPUT_DIR/colorinvo-iphone-6-9-01-wallpaper-palette.png"
+echo "  $OUTPUT_DIR/colorinvo-iphone-6-9-02-decorations.png"
+echo "  $OUTPUT_DIR/colorinvo-iphone-6-9-03-scanner-widget.png"
