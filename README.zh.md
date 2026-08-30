@@ -11,7 +11,17 @@
 - **桌布主題配色：** 選一張桌布圖片，自動抓代表色與小張預覽並產生配色方案。
 - **保證能掃的到：** 確保條碼配色符合商業掃描器反射率對比規則。
 
-> 日後預計上架 App Store，敬請期待！
+## 官方版本
+
+官方條色盤 App 與網站由 Hsi 發佈於
+[colorinvo.hsichen.dev](https://colorinvo.hsichen.dev)。Fork 版本請使用自己的 App
+名稱、bundle identifier、圖示、截圖、支援連結、隱私權政策與部署端點。
+
+## 安裝
+
+iPhone 使用者可於
+[App Store](https://apps.apple.com/tw/app/%E6%A2%9D%E8%89%B2%E7%9B%A4/id6786967206)
+下載條色盤。
 
 ## 在 iOS 模擬器執行
 

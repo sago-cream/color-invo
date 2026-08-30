@@ -12,7 +12,17 @@
 * Wallpaper-Based Theming: Pick a wallpaper, and the app extracts representative colors and a small preview to generate matching themes.
 * Guaranteed Scannability: Barcode colors are generated to meet commercial scanner reflectance and contrast requirements.
 
-> We plan to release this to App Store in the future, hold on tight!
+## Official version
+
+The official ColorInvo app and website are published by Hsi at
+[colorinvo.hsichen.dev](https://colorinvo.hsichen.dev). Forks should use their
+own app name, bundle identifier, icons, screenshots, support links, privacy
+policy, and deployment endpoints.
+
+## Install
+
+Download ColorInvo for iPhone from the
+[App Store](https://apps.apple.com/tw/app/%E6%A2%9D%E8%89%B2%E7%9B%A4/id6786967206).
 
 ## Web deployment
 
