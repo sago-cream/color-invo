@@ -47,3 +47,10 @@ bun run ios:screenshot-chat
 ```
 
 The script writes an absolute PNG path under `.codex-screenshots/` and prints a `node_repl` snippet. Run that snippet with the `node_repl` `js` tool so Codex chat receives the image bytes through `nodeRepl.emitImage(...)`; this makes the screenshot viewable from Codex mobile too.
+
+## License
+
+Source code and documentation are licensed under the MIT License. The
+ColorInvo name, app icons, original artwork, screenshots, App Store listing,
+domain, and other brand assets are not licensed for reuse. See
+[BRAND.md](./BRAND.md).

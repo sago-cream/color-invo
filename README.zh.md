@@ -30,3 +30,9 @@ iPhone 使用者可於
 ```sh
 bun run simulator
 ```
+
+## 授權
+
+原始碼與文件使用 MIT License。「條色盤」、ColorInvo、App 圖示、原創美術、截圖、
+App Store listing、網域與其他品牌資產不授權重用。詳見
+[BRAND.md](./BRAND.md)。
