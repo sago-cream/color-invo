@@ -75,18 +75,19 @@ android_resolve_release_versions() {
         read -r -p "Version code [$ANDROID_VERSION_CODE]: " value
         ANDROID_VERSION_CODE="${value:-$ANDROID_VERSION_CODE}"
     fi
-    [[ "$ANDROID_VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || android_die "ANDROID_VERSION_CODE must be a positive integer."
+    [[ "$ANDROID_VERSION_CODE" =~ ^[1-9][0-9]{0,9}$ && "$ANDROID_VERSION_CODE" -le 2100000000 ]] || android_die "ANDROID_VERSION_CODE must be an integer from 1 to 2100000000."
+    [[ "$ANDROID_VERSION_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]] || android_die "ANDROID_VERSION_NAME must look like 0.1.0 or 0.1.0-beta.1."
     export ANDROID_VERSION_NAME ANDROID_VERSION_CODE
 }
 
 android_require_release_signing() {
-    local properties_path="$ANDROID_APP_DIR/keystore.properties"
-    [[ -f "$properties_path" ]] || android_die "Missing apps/android/keystore.properties. Copy keystore.properties.example and add the upload-key values."
-    local store_file
-    store_file="$(awk -F= '$1 == "storeFile" { print substr($0, index($0, "=") + 1); exit }' "$properties_path")"
-    [[ -n "$store_file" ]] || android_die "storeFile is missing from keystore.properties."
-    [[ "$store_file" = /* ]] || store_file="$ANDROID_APP_DIR/$store_file"
-    [[ -f "$store_file" ]] || android_die "Android upload keystore not found at $store_file."
+    java "$ANDROID_ROOT_DIR/scripts/AndroidSigningCheck.java" signing "$ANDROID_APP_DIR"
+}
+
+android_require_play_credentials() {
+    python3 "$ANDROID_ROOT_DIR/scripts/android-play-credentials.py"
+    command -v bundle >/dev/null || android_die "Ruby Bundler is required. Install Ruby 3.3 and run bundle install in apps/android."
+    (cd "$ANDROID_APP_DIR" && bundle check >/dev/null) || android_die "Fastlane dependencies are missing. Run bundle install in apps/android."
 }
 
 android_load_env

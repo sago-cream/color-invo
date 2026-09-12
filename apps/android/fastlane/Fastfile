@@ -1,21 +1,22 @@
+require_relative 'release_config'
 default_platform(:android)
 
 platform :android do
-  desc "Upload a signed ColorInvo bundle and Play listing"
+  desc 'Validate or upload a verified signed bundle and the reviewed localized listing'
   lane :upload do
-    service_account = ENV.fetch("PLAY_SERVICE_ACCOUNT_JSON")
-    bundle_path = ENV.fetch("ANDROID_AAB_PATH")
-    track = ENV.fetch("PLAY_TRACK", "internal")
+    options = ColorInvoRelease.upload(ENV)
+    scripts = File.expand_path('../../../scripts', __dir__)
+    sh('python3', File.join(scripts, 'android-play-credentials.py'))
+    sh('python3', File.join(scripts, 'android-store-check.py'))
+    sh('python3', File.join(scripts, 'android-policy-check.py'))
+    sh('bash', File.join(scripts, 'android-verify-bundle.sh'))
+    supply(**options)
+  end
 
-    supply(
-      package_name: ENV.fetch("ANDROID_PACKAGE_NAME", "dev.hsichen.colorinvo"),
-      aab: bundle_path,
-      json_key: service_account,
-      track: track,
-      release_status: ENV.fetch("PLAY_RELEASE_STATUS", "completed"),
-      metadata_path: File.expand_path("../play", __dir__),
-      skip_upload_images: ENV.fetch("PLAY_UPLOAD_IMAGES", "false") != "true",
-      skip_upload_screenshots: ENV.fetch("PLAY_UPLOAD_SCREENSHOTS", "false") != "true"
-    )
+  desc 'Promote one existing Play version without rebuilding or replacing the listing'
+  lane :promote do
+    options = ColorInvoRelease.promote(ENV)
+    sh('python3', File.expand_path('../../../scripts/android-play-credentials.py', __dir__))
+    supply(**options)
   end
 end

@@ -34,14 +34,13 @@ bun run android:test:device
 
 ## Google Play release
 
-1. Copy `apps/android/keystore.properties.example` to `apps/android/keystore.properties` and point it at the private Play upload keystore.
-2. Install the upload tooling with `cd apps/android && bundle install`.
-3. Set `PLAY_SERVICE_ACCOUNT_JSON` to a Play Console service-account key that can release this app.
-4. Run `bun run android:bundle` for a signed Android App Bundle, or `bun run android:release` to check, bundle, and upload to the `internal` track.
+Run `bun run android:candidate` now: no Play account or signing secrets are needed. It checks the localized listing, release tooling, unit tests, debug/release lint, and the minified AAB (including 16 KB native compatibility). GitHub Actions also runs Android 8 and Android 16 emulator tests and saves the candidate and debug APK as artifacts.
 
-`ANDROID_VERSION_NAME`, `ANDROID_VERSION_CODE`, `PLAY_TRACK`, and staged-release options can be set in `.env.local`. Store metadata is in `apps/android/play`; the privacy policy is [colorinvo.hsichen.dev/en/privacy](https://colorinvo.hsichen.dev/en/privacy). Generate localized phone screenshots from a connected API 36 device with `bun run android:screenshots`, then opt into uploading them with `PLAY_UPLOAD_SCREENSHOTS=true`.
+When an upload key is configured, `bun run android:bundle` produces a verified signed AAB for the first manual Play Console upload. Once the app record and API access exist, `bun run android:release` builds and validates an internal draft with Google; set `PLAY_VALIDATE_ONLY=false` to commit the upload. `bun run android:promote` promotes a specific existing version without rebuilding it.
 
-See the [complete Play Console checklist](apps/android/PLAY_RELEASE.md) for one-time setup, policy declarations, store artwork, and CI secrets.
+The **Android Play release** workflow has `candidate`, `bundle`, `upload`, and `promote` modes. Store copy, icons, feature graphics, and three screenshots per locale are committed under `apps/android/play`. Regenerate them on an API 33+ emulator with `bun run android:screenshots`; validate them with `bun run android:store:check`.
+
+See the [release guide](apps/android/PLAY_RELEASE.md) for the exact secrets, first-upload steps, commands, and remaining account requirements, and the [prepared Console answers](apps/android/PLAY_DECLARATIONS.md) for the app-content forms.
 
 ## Run on iOS Simulator
 

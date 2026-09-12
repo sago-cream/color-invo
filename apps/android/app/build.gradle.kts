@@ -9,6 +9,20 @@ val releaseProperties = Properties().apply {
     val propertiesFile = rootProject.file("keystore.properties")
     if (propertiesFile.exists()) propertiesFile.inputStream().use(::load)
 }
+val signingValues = mapOf(
+    "storeFile" to "ANDROID_UPLOAD_KEYSTORE_PATH",
+    "storePassword" to "ANDROID_UPLOAD_STORE_PASSWORD",
+    "keyAlias" to "ANDROID_UPLOAD_KEY_ALIAS",
+    "keyPassword" to "ANDROID_UPLOAD_KEY_PASSWORD",
+).mapValues { (property, variable) ->
+    providers.environmentVariable(variable).orNull ?: releaseProperties.getProperty(property)
+}
+val hasReleaseSigning = signingValues.values.any { !it.isNullOrEmpty() }
+if (hasReleaseSigning) {
+    require(signingValues.values.all { !it.isNullOrEmpty() }) {
+        "Incomplete release signing. Set all four ANDROID_UPLOAD_* values or complete keystore.properties."
+    }
+}
 
 android {
     namespace = "dev.hsichen.colorinvo"
@@ -25,12 +39,12 @@ android {
     }
 
     signingConfigs {
-        if (releaseProperties.isNotEmpty()) {
+        if (hasReleaseSigning) {
             create("release") {
-                storeFile = rootProject.file(releaseProperties.getProperty("storeFile"))
-                storePassword = releaseProperties.getProperty("storePassword")
-                keyAlias = releaseProperties.getProperty("keyAlias")
-                keyPassword = releaseProperties.getProperty("keyPassword")
+                storeFile = rootProject.file(signingValues.getValue("storeFile")!!)
+                storePassword = signingValues.getValue("storePassword")
+                keyAlias = signingValues.getValue("keyAlias")
+                keyPassword = signingValues.getValue("keyPassword")
             }
         }
     }

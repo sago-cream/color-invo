@@ -7,6 +7,9 @@ ANDROID_RELEASE_PROMPT="${ANDROID_RELEASE_PROMPT:-1}"
 android_resolve_release_versions
 export ANDROID_VERSION_NAME ANDROID_VERSION_CODE
 
+android_require_release_signing
+android_require_play_credentials
+python3 "$SCRIPT_DIR/android-store-check.py"
 "$SCRIPT_DIR/android-check.sh"
 "$SCRIPT_DIR/android-bundle.sh"
 "$SCRIPT_DIR/android-upload.sh"

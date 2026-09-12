@@ -1,39 +1,19 @@
 name: Android checks
 
 on:
+  workflow_dispatch:
   pull_request:
-    paths: ["apps/android/**", "scripts/android-*.sh", ".github/workflows/android.yml"]
+    paths: ["apps/android/**", "scripts/android-*", "scripts/AndroidSigningCheck.java", "scripts/tests/**", ".github/workflows/android*.yml"]
   push:
-    branches: [main]
-    paths: ["apps/android/**", "scripts/android-*.sh", ".github/workflows/android.yml"]
+    branches: [main, feat/android-native]
+    paths: ["apps/android/**", "scripts/android-*", "scripts/AndroidSigningCheck.java", "scripts/tests/**", ".github/workflows/android*.yml"]
+
+permissions:
+  contents: read
+concurrency:
+  group: android-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
-      - uses: android-actions/setup-android@v3
-      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-      - run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
-        working-directory: apps/android
-
-  device-tests:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: gradle
-      - uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 36
-          arch: x86_64
-          profile: pixel_2
-          script: cd apps/android && ./gradlew connectedDebugAndroidTest
+  verify:
+    uses: ./.github/workflows/android-verify.yml
