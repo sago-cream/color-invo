@@ -20,4 +20,7 @@
     <string name="decoration_wave">顏料</string>
     <string name="decoration_none">極簡</string>
     <string name="widget_description">台灣手機載具條碼</string>
+    <string name="widget_empty">開啟 App 儲存載具</string>
+    <string name="preview_empty">輸入載具即可預覽</string>
+    <string name="barcode_preview">載具條碼預覽 %1$s</string>
 </resources>

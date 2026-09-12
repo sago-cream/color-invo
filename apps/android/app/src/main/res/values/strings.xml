@@ -20,4 +20,7 @@
     <string name="decoration_wave">Paint</string>
     <string name="decoration_none">Minimal</string>
     <string name="widget_description">Your Taiwan mobile invoice carrier barcode</string>
+    <string name="widget_empty">Open ColorInvo\nto save your carrier</string>
+    <string name="preview_empty">Enter a valid carrier\nto preview</string>
+    <string name="barcode_preview">Carrier barcode preview %1$s</string>
 </resources>

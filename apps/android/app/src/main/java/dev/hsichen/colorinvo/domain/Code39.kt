@@ -1,5 +1,7 @@
 package dev.hsichen.colorinvo.domain
 
+import java.util.Locale
+
 object Code39 {
     private val patterns = mapOf(
         '0' to "nnnwwnwnn", '1' to "wnnwnnnnw", '2' to "nnwwnnnnw", '3' to "wnwwnnnnn",
@@ -18,9 +20,11 @@ object Code39 {
     data class Bar(val startsAt: Int, val width: Int)
 
     fun bars(value: String): Pair<List<Bar>, Int> {
-        val encoded = "*${value.uppercase()}*"
+        val normalized = value.uppercase(Locale.ROOT)
+        if (normalized.isEmpty() || normalized.any { it == '*' || it !in patterns }) return emptyList<Bar>() to 0
+        val encoded = "*$normalized*"
         val bars = mutableListOf<Bar>()
-        var cursor = 0
+        var cursor = 10 // Ten narrow modules of quiet zone on each side, matching iOS.
         encoded.forEachIndexed { characterIndex, character ->
             val pattern = requireNotNull(patterns[character]) { "Unsupported Code 39 character: $character" }
             pattern.forEachIndexed { index, widthCode ->
@@ -30,6 +34,6 @@ object Code39 {
             }
             if (characterIndex < encoded.lastIndex) cursor += 1
         }
-        return bars to cursor
+        return bars to cursor + 10
     }
 }
