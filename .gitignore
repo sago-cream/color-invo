@@ -20,3 +20,4 @@ apps/android/keystore.properties
 apps/android/play-service-account.json
 *.jks
 *.keystore
+__pycache__/
