@@ -11,6 +11,7 @@ import androidx.core.graphics.createBitmap
 import dev.hsichen.colorinvo.R
 import dev.hsichen.colorinvo.data.CarrierSettings
 import dev.hsichen.colorinvo.data.Decoration
+import dev.hsichen.colorinvo.domain.BarcodePalette
 import dev.hsichen.colorinvo.domain.CarrierCode
 import dev.hsichen.colorinvo.domain.Code39
 import kotlin.math.roundToInt
@@ -28,8 +29,11 @@ object WidgetBitmapRenderer {
 
     fun draw(context: Context, canvas: Canvas, settings: CarrierSettings, width: Float, height: Float, preview: Boolean = false) {
         val code = CarrierCode.normalize(settings.carrierCode).ifEmpty { if (preview) "/ABC1234" else "" }
-        val background = Paint().apply { color = settings.palette.backgroundColor.argb }
-        val foreground = Paint().apply { color = settings.palette.barColor.argb }
+        // Older Android builds persisted unsafe palettes. Keep those widgets usable while
+        // the editor continues to show the original draft and its validation warning.
+        val palette = if (!preview && !settings.palette.meetsCommercialGuidance) BarcodePalette.Classic else settings.palette
+        val background = Paint().apply { color = palette.backgroundColor.argb }
+        val foreground = Paint().apply { color = palette.barColor.argb }
         canvas.drawRect(0f, 0f, width, height, background)
         if (!CarrierCode.isValid(code)) {
             drawEmptyState(context, canvas, foreground, width, height, preview)

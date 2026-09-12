@@ -31,7 +31,9 @@ class ColorInvoWidget : GlanceAppWidget() {
             }
             Image(
                 provider = ImageProvider(bitmap),
-                contentDescription = context.getString(R.string.widget_description),
+                contentDescription = if (dev.hsichen.colorinvo.domain.CarrierCode.isValid(settings.carrierCode))
+                    context.getString(R.string.barcode_preview, settings.carrierCode)
+                else context.getString(R.string.widget_empty),
                 contentScale = ContentScale.FillBounds,
                 modifier = GlanceModifier.fillMaxSize().clickable(actionStartActivity(MainActivity::class.java)),
             )

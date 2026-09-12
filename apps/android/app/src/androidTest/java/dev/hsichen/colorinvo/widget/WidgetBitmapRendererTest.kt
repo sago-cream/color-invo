@@ -38,6 +38,17 @@ class WidgetBitmapRendererTest {
         }
     }
 
+    @Test fun legacyUnsafePaletteFallsBackOnlyInTheSavedWidget() {
+        val unsafe = BarcodePalette("legacy", RgbaColor(0xFF0000), RgbaColor(0x222222))
+        val settings = CarrierSettings("/ABC1234", unsafe, decoration = Decoration.NONE)
+        val widget = WidgetBitmapRenderer.render(context, settings)
+        assertEquals("/ABC1234", decode(widget, 62))
+        val preview = androidx.core.graphics.createBitmap(658, 310)
+        WidgetBitmapRenderer.draw(context, android.graphics.Canvas(preview), settings, 658f, 310f, preview = true)
+        assertEquals(unsafe.backgroundColor.argb, preview.getPixel(0, 62))
+        assertTrue(runCatching { decode(preview, 62) }.isFailure)
+    }
+
     @Test fun paintUsesTheSelectedSourceColor() {
         val color = RgbaColor(0x70D6FF)
         val bitmap = WidgetBitmapRenderer.render(context, CarrierSettings("/ABC1234", decoration = Decoration.WAVE, waveColor = color))
