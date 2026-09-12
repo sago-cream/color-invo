@@ -15,10 +15,13 @@ import android.widget.ImageView
 import android.widget.RemoteViews
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.glance.appwidget.updateAll
 import dev.hsichen.colorinvo.data.CarrierSettings
 import dev.hsichen.colorinvo.data.CarrierStore
+import dev.hsichen.colorinvo.widget.ColorInvoWidget
 import dev.hsichen.colorinvo.widget.ColorInvoWidgetReceiver
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -29,6 +32,7 @@ class WidgetLifecycleTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val rendered = AtomicBoolean(false)
+        val refreshed = AtomicBoolean(false)
         val store = CarrierStore(context)
         val previous = store.load()
         val host = object : AppWidgetHost(context, 0x4349) {
@@ -36,7 +40,8 @@ class WidgetLifecycleTest {
                 object : AppWidgetHostView(context) {
                     override fun updateAppWidget(remoteViews: RemoteViews?) {
                         super.updateAppWidget(remoteViews)
-                        if (hasRenderedImage(this)) rendered.set(true)
+                        if (hasRenderedImage(this, "/ABC1234")) rendered.set(true)
+                        if (hasRenderedImage(this, "/XYZ5678")) refreshed.set(true)
                     }
                 }
         }
@@ -65,6 +70,13 @@ class WidgetLifecycleTest {
             val deadline = SystemClock.elapsedRealtime() + 15000
             while (!rendered.get() && SystemClock.elapsedRealtime() < deadline) SystemClock.sleep(100)
             assertTrue("The saved carrier must reach the widget host as rendered artwork", rendered.get())
+            // A second save must update the same active composition, without removing
+            // the widget or waiting for Glance's session to expire.
+            assertTrue(store.save(CarrierSettings(carrierCode = "/XYZ5678")))
+            runBlocking { ColorInvoWidget().updateAll(context) }
+            val refreshDeadline = SystemClock.elapsedRealtime() + 10000
+            while (!refreshed.get() && SystemClock.elapsedRealtime() < refreshDeadline) SystemClock.sleep(100)
+            assertTrue("A running widget must display the newly saved carrier", refreshed.get())
         } finally {
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) host.deleteAppWidgetId(widgetId)
             host.stopListening()
@@ -73,7 +85,7 @@ class WidgetLifecycleTest {
         }
     }
 
-    private fun hasRenderedImage(view: View): Boolean =
-        (view is ImageView && view.drawable != null && view.contentDescription?.contains("/ABC1234") == true) ||
-            (view is ViewGroup && (0 until view.childCount).any { hasRenderedImage(view.getChildAt(it)) })
+    private fun hasRenderedImage(view: View, code: String): Boolean =
+        (view is ImageView && view.drawable != null && view.contentDescription?.contains(code) == true) ||
+            (view is ViewGroup && (0 until view.childCount).any { hasRenderedImage(view.getChildAt(it), code) })
 }

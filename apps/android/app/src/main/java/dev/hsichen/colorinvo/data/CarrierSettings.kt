@@ -2,10 +2,15 @@ package dev.hsichen.colorinvo.data
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import dev.hsichen.colorinvo.domain.BarcodePalette
 import dev.hsichen.colorinvo.domain.CarrierCode
 import dev.hsichen.colorinvo.domain.RgbaColor
 import dev.hsichen.colorinvo.domain.WallpaperPaletteGenerator
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 enum class Decoration { CAT, WAVE, NONE }
 
@@ -23,6 +28,13 @@ data class CarrierSettings(
 
 class CarrierStore(context: Context) {
     private val preferences = context.getSharedPreferences("carrier-settings", Context.MODE_PRIVATE)
+
+    fun observe() = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> trySend(load()) }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(load())
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.conflate().distinctUntilChanged()
 
     fun load(): CarrierSettings {
         val palette = readPalette("") ?: BarcodePalette.Classic

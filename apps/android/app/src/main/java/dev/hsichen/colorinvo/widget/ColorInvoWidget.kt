@@ -1,6 +1,8 @@
 package dev.hsichen.colorinvo.widget
 
 import android.content.Context
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -23,8 +25,11 @@ class ColorInvoWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val settings = CarrierStore(context).load()
+        val store = CarrierStore(context)
+        val initialSettings = store.load()
         provideContent {
+            // updateAll does not restart provideGlance during an active session.
+            val settings by remember(store) { store.observe() }.collectAsState(initialSettings)
             val size = LocalSize.current
             val bitmap = remember(settings, size) {
                 WidgetBitmapRenderer.render(context, settings, (size.width.value * 2).toInt(), (size.height.value * 2).toInt())
