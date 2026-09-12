@@ -4,6 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "android": "scripts/android-install.sh",
+    "android:build": "scripts/android-build.sh",
+    "android:bundle": "scripts/android-bundle.sh",
+    "android:check": "scripts/android-check.sh",
+    "android:device": "scripts/android-install.sh",
+    "android:release": "scripts/android-release.sh",
+    "android:screenshots": "scripts/android-screenshots.sh",
+    "android:test": "scripts/android-check.sh",
+    "android:test:device": "scripts/android-test-device.sh",
+    "android:upload": "scripts/android-upload.sh",
     "archive": "scripts/ios-archive.sh",
     "build": "scripts/ios-build.sh",
     "check": "scripts/ios-check.sh",
@@ -32,6 +42,10 @@
     "upload": "scripts/ios-upload.sh",
     "web:build": "bun run --cwd apps/web build",
     "web:check": "bun run --cwd apps/web check",
-    "web:dev": "bun run --cwd apps/web dev"
+    "web:dev": "bun run --cwd apps/web dev",
+    "android:store:check": "python3 scripts/android-store-check.py",
+    "android:candidate": "scripts/android-candidate.sh",
+    "android:promote": "scripts/android-promote.sh",
+    "android:policy:check": "python3 scripts/android-policy-check.py"
   }
 }

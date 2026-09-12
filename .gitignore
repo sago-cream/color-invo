@@ -12,3 +12,16 @@ xcuserdata/
 .env
 .env.local
 *.local
+apps/android/.gradle/
+apps/android/.kotlin/
+apps/android/local.properties
+apps/android/**/build/
+apps/android/keystore.properties
+apps/android/play-service-account.json
+*.jks
+*.keystore
+__pycache__/
+apps/android/.tools/
+apps/android/.bundle/
+apps/android/vendor/
+apps/android/fastlane/report.xml

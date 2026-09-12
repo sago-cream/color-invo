@@ -1,0 +1,22 @@
+require_relative 'release_config'
+default_platform(:android)
+
+platform :android do
+  desc 'Validate or upload a verified signed bundle and the reviewed localized listing'
+  lane :upload do
+    options = ColorInvoRelease.upload(ENV)
+    scripts = File.expand_path('../../../scripts', __dir__)
+    sh('python3', File.join(scripts, 'android-play-credentials.py'))
+    sh('python3', File.join(scripts, 'android-store-check.py'))
+    sh('python3', File.join(scripts, 'android-policy-check.py'))
+    sh('bash', File.join(scripts, 'android-verify-bundle.sh'))
+    supply(**options)
+  end
+
+  desc 'Promote one existing Play version without rebuilding or replacing the listing'
+  lane :promote do
+    options = ColorInvoRelease.promote(ENV)
+    sh('python3', File.expand_path('../../../scripts/android-play-credentials.py', __dir__))
+    supply(**options)
+  end
+end

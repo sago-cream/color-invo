@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include domain="sharedpref" path="carrier-settings.xml" />
+        <include domain="file" path="wallpaper-preview.jpg" />
+</full-backup-content>
