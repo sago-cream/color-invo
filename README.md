@@ -12,6 +12,24 @@
 * Wallpaper-Based Theming: Pick a wallpaper, and the app extracts representative colors and a small preview to generate matching themes.
 * Guaranteed Scannability: Barcode colors are generated to meet commercial scanner reflectance and contrast requirements.
 
+## Official version
+
+The official ColorInvo app and website are published by Hsi at
+[colorinvo.hsichen.dev](https://colorinvo.hsichen.dev). Forks should use their
+own app name, bundle identifier, icons, screenshots, support links, privacy
+policy, and deployment endpoints.
+
+## Install
+
+Download ColorInvo for iPhone from the
+[App Store](https://apps.apple.com/tw/app/%E6%A2%9D%E8%89%B2%E7%9B%A4/id6786967206).
+
+## Web deployment
+
+The root `vercel.json` is the single deployment definition. Vercel installs the
+`apps/web` workspace, runs the root `web:build` script, and publishes the static
+export from `apps/web/dist`. Do not add a second config under `apps/web`.
+
 ## Run on Android
 
 Install Android Studio with the Android 16 / API 36 SDK, start an emulator or connect an unlocked device, then run:
@@ -59,3 +77,10 @@ bun run ios:screenshot-chat
 ```
 
 The script writes an absolute PNG path under `.codex-screenshots/` and prints a `node_repl` snippet. Run that snippet with the `node_repl` `js` tool so Codex chat receives the image bytes through `nodeRepl.emitImage(...)`; this makes the screenshot viewable from Codex mobile too.
+
+## License
+
+Source code and documentation are licensed under the MIT License. The
+ColorInvo name, app icons, original artwork, screenshots, App Store listing,
+domain, and other brand assets are not licensed for reuse. See
+[BRAND.md](./BRAND.md).

@@ -4,11 +4,11 @@ import { absoluteRoute, LOCALES } from './site';
 
 export const dynamic = 'force-static';
 
-const lastModified = new Date('2026-07-03');
+const lastModified = new Date('2026-07-27');
 
 type Sitemap = ReadonlyArray<MetadataRoute.Sitemap[number]>;
 
-const pages = ['home', 'support', 'privacy'] as const;
+const pages = ['home', 'support', 'privacy', 'legal'] as const;
 
 const sitemapEntries: Sitemap = LOCALES.flatMap((locale) =>
     pages.map((page) => ({
@@ -19,7 +19,8 @@ const sitemapEntries: Sitemap = LOCALES.flatMap((locale) =>
                 'zh-Hant-TW': absoluteRoute('zh', page),
             },
         },
-        changeFrequency: page === 'privacy' ? 'yearly' : 'monthly',
+        changeFrequency:
+            page === 'privacy' || page === 'legal' ? 'yearly' : 'monthly',
         lastModified,
         priority: page === 'home' ? 1 : 0.8,
         url: absoluteRoute(locale, page),

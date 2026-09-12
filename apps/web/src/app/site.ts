@@ -1,4 +1,6 @@
 export const SITE = {
+    appStoreUrl:
+        'https://apps.apple.com/tw/app/%E6%A2%9D%E8%89%B2%E7%9B%A4/id6786967206',
     name: 'ColorInvo',
     localName: '條色盤',
     url: 'https://colorinvo.hsichen.dev',
@@ -9,11 +11,13 @@ export const SITE = {
 export const ROUTES = {
     en: {
         home: '/en',
+        legal: '/en/legal',
         privacy: '/en/privacy',
         support: '/en/support',
     },
     zh: {
         home: '/',
+        legal: '/legal',
         privacy: '/privacy',
         support: '/support',
     },

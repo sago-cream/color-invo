@@ -1,11 +1,11 @@
 # App Store Screenshot Design QA
 
-- Source visual truth: `/tmp/colorinvo-smaller-copy-panorama.png`, revised by the latest user brief so both remaining copy groups occupy approximately 85% of their usable card width.
-- Implementation screenshots: `/Users/hsi/Projects/Apps/Mobile/ColorInvo/assets/screenshots/colorinvo-iphone-6-5-01-wallpaper-palette.png`, `/Users/hsi/Projects/Apps/Mobile/ColorInvo/assets/screenshots/colorinvo-iphone-6-5-02-decorations.png`, `/Users/hsi/Projects/Apps/Mobile/ColorInvo/assets/screenshots/colorinvo-iphone-6-5-03-scanner-widget.png`
+- Source visual truth: the three tracked outputs under `assets/screenshots`, revised by the latest user brief so both remaining copy groups occupy approximately 85% of their usable card width.
+- Implementation screenshots: `assets/screenshots/colorinvo-iphone-6-5-01-wallpaper-palette.png`, `assets/screenshots/colorinvo-iphone-6-5-02-decorations.png`, and `assets/screenshots/colorinvo-iphone-6-5-03-scanner-widget.png`.
 - Viewport: three adjacent 1284 × 2778 App Store screenshots; combined panorama 3852 × 2778.
 - State: Traditional Chinese showcase data, light appearance, orange paint widget with `#222222` bars and blue cat widget.
-- Full-view comparison evidence: `/tmp/colorinvo-85-copy-comparison.png`.
-- Focused comparison evidence: `/tmp/colorinvo-85-copy-contact.png` verifies the three isolated-card crops, enlarged typography, opposing alignment, and the text-free center bridge.
+- Full-view comparison evidence: the three tracked output panels form the complete 3852 × 2778 panorama.
+- Focused comparison evidence: the individual tracked panels verify the isolated-card crops, enlarged typography, opposing alignment, and the text-free center bridge.
 
 ## Findings
 
@@ -42,6 +42,146 @@
 - [x] Fit every copy line to approximately 85% of the usable card width.
 - [x] Right-align 提取桌布配色 at the top-right and left-align 選擇額外裝飾 at the bottom-left.
 - [x] Verify all three 1284 × 2778 outputs and standalone crops.
+
+## Follow-up Polish
+
+- None required for this pass.
+
+final result: passed
+
+---
+
+# Landing Page Design QA
+
+- Source visual truth path:
+  `.codex-screenshots/ontrack-landing-reference.png`
+- Implementation screenshot paths:
+  `.codex-screenshots/colorinvo-landing-desktop.png` and
+  `.codex-screenshots/colorinvo-landing-mobile.png`
+- Combined comparison:
+  `.codex-screenshots/colorinvo-landing-comparison.png`
+- Desktop viewport: 960 × 900 CSS px at device scale 1. Browser scrollbar
+  normalization produced 959 px and 945 px wide full-page captures for the
+  source and implementation.
+- Mobile viewport: 390 × 844 CSS px at device scale 1. The in-app browser
+  produced a 375 × 2314 px content capture after browser chrome normalization.
+- State: Traditional Chinese, light appearance, cat widget selected.
+- Primary interactions tested: Cat/Paint/Minimal selector, official App Store
+  link target, `/legal`, localized footer navigation, and responsive layout.
+- Browser console: no errors or warnings in the final desktop implementation
+  capture.
+
+## Full-view comparison evidence
+
+The combined comparison verifies the requested structural reference rather than
+a literal visual clone. Both pages use a restrained hero followed by a central
+product capture with anchored explanatory cards. ColorInvo intentionally keeps
+its existing typography, cyan palette, icon, footer, and legal-page system while
+adapting OnTrack's product-story rhythm to the three-step carrier setup.
+
+## Focused comparison evidence
+
+The mobile capture verifies the areas that are too small to judge in the
+combined desktop view: the hero headline wraps cleanly in two lines, the
+official App Store badge remains legible, the complete widget frame is visible
+without clipping, the selector retains 44 px targets, and the three annotated
+steps collapse into the intended reading order below the editor image.
+
+## Findings
+
+- No actionable P0, P1, or P2 differences remain.
+- Fonts and typography: the existing Iowan/Palatino display family and IBM
+  Plex/Avenir body stack preserve ColorInvo's identity. Desktop hierarchy,
+  mobile wrapping, weights, and line heights remain readable without
+  truncation.
+- Spacing and layout rhythm: the desktop feature cards retain OnTrack's
+  anchored-callout pattern while the mobile layout removes connectors and
+  becomes a linear image-first story. Spacing, radii, and shadows use the
+  project's existing 4 px token scale.
+- Colors and visual tokens: all new surfaces, borders, controls, icons, and
+  shadows use ColorInvo tokens. Contrast remains clear in the selected and
+  unselected widget-style states.
+- Image quality and asset fidelity: the showcase uses full 1140 × 654 crops
+  from real simulator captures, and the central product image uses the latest
+  1284 × 2778 simulator capture with the cat-style picker. The colorful widget
+  boundary, barcode, and cat are all visible; no product artwork is
+  reconstructed with CSS.
+- Copy and content: the approved accessory-led hero copy, three-step flow,
+  on-device trust note, localized App Store CTA, and legal/logo-use guidance are
+  present in Traditional Chinese and English.
+- Accessibility and interaction: the selector exposes pressed state and live
+  image alt text, focus states are inherited from the site system, reduced
+  motion is respected, and navigation remains semantic.
+
+## Comparison History
+
+1. Initial implementation used the inner 1044 × 492 barcode crop.
+2. The user requested an uncropped widget preview, App Store CTA, and legal
+   logo-use page.
+3. The showcase was replaced with full 1140 × 654 widget captures, the official
+   localized badges and listing URL were added, and `/legal` plus `/en/legal`
+   were implemented.
+4. The first mobile review found an awkward split inside `完美配色`; reducing the
+   mobile hero size produced a balanced two-line headline.
+5. Final desktop and mobile captures found no remaining P0, P1, or P2 issues.
+6. The central editor image was updated from the July 3 website capture to the
+   latest product capture used by the current release workflow.
+7. The desktop callouts were realigned to the new screenshot: decoration beside
+   the style picker, scan-safe generation beside the widget preview, and
+   wallpaper colors beside the import and palette controls. Mobile keeps the
+   original three-step reading order.
+8. The header now follows the OnTrack reference with branding on the left and a
+   plain-text App Store CTA on the right. Widget styles move through one
+   horizontal, interruptible track, and the redundant device-storage note was
+   removed.
+9. The landing-page system now uses the app icon's `#FF9770` orange as its
+   primary color, supported by warm neutral surfaces and a darker accessible
+   orange for text and focus states. The top-right CTA is an orange “App Store”
+   button.
+10. The App Store artwork composer uses `NSFont.systemFont` with black title
+    weight and bold supporting headings. Landing-page headings now use the
+    equivalent San Francisco system stack with PingFang TC for Traditional
+    Chinese, replacing the unrelated Iowan serif display face.
+11. The central product screenshot was recolored to the same orange system as
+    the landing page. Its widget uses a `#FF9770`-led peach preview, pale inner
+    surface, and deep burnt-orange barcode and cat treatment; blue UI accents
+    were likewise replaced with coordinated orange states.
+12. The 375 × 667 annotation pass hides the redundant header CTA below 480 px,
+    centers the official badge when the hero becomes single-column at 960 px,
+    and updates the Traditional Chinese title to
+    「為你的載具挑選完美配色（或是貓貓）」. The localized phrase 「完美配色」
+    is kept together at every width.
+13. The orange landing-page experiment was rolled back in favor of the iOS
+    app's actual `ColorInvoTheme.primary` value, `#007EA8`. The original cool
+    surfaces, blue interaction states, blue widget showcase captures, and
+    original blue product screenshot are again used consistently.
+14. Headline wrapping now follows explicit semantic boundaries instead of
+    character-level opportunities. Traditional Chinese copy also uses the
+    browser's phrase-aware line-breaking mode, preventing breaks inside natural
+    phrases throughout the site.
+15. The hero is now a centered vertical product story, with the widget selector
+    preceding the uncropped widget. The three-step heading uses the smaller
+    heading scale, its callout cards are icon-free and shadow-free, and their
+    copy is shorter in both locales. The footer now mirrors OnTrack's copyright
+    treatment with `© 2026 ColorInvo`.
+16. The website typography was reduced from four semantic font aliases, six
+    base constructions, and ten rendered tuples to three aliases, three
+    constructions, and five tuples. All web text now uses the system stack;
+    body size, leading, link weight, and responsive display behavior are
+    consolidated without changing the iOS app.
+
+## Open Questions
+
+- None.
+
+## Implementation Checklist
+
+- [x] Preserve the complete widget frame at every breakpoint.
+- [x] Make Cat, Paint, and Minimal preview states interactive.
+- [x] Add localized official App Store badges and the live ColorInvo listing.
+- [x] Adapt OnTrack's anchored feature analysis to the three-step setup flow.
+- [x] Add localized legal pages and footer links for logo usage.
+- [x] Verify desktop, mobile, selector state, legal content, and browser output.
 
 ## Follow-up Polish
 

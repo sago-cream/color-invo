@@ -12,5 +12,7 @@
     --clr-accent-strong: #005f80;
     --clr-accent-soft: #d7f3fb;
     --clr-success: #27795f;
+    --clr-image-outline: rgba(0, 0, 0, 0.1);
     --shadow-surface: 0 24px 48px rgba(16, 32, 43, 0.08);
+    --shadow-widget: 0 32px 64px rgba(16, 32, 43, 0.16);
 }
