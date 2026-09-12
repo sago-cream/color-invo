@@ -13,6 +13,7 @@ xcuserdata/
 .env.local
 *.local
 apps/android/.gradle/
+apps/android/.kotlin/
 apps/android/local.properties
 apps/android/**/build/
 apps/android/keystore.properties

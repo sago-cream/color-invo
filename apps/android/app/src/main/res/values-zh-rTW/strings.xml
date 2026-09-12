@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ColorInvo</string>
+    <string name="app_name">條色盤</string>
     <string name="widget_title">載具小工具</string>
     <string name="carrier_title">手機載具</string>
     <string name="palette_title">自由條色</string>
@@ -23,4 +23,20 @@
     <string name="widget_empty">開啟 App 儲存載具</string>
     <string name="preview_empty">輸入載具即可預覽</string>
     <string name="barcode_preview">載具條碼預覽 %1$s</string>
+    <string name="not_synced">尚未同步</string>
+    <string name="save_error">無法同步</string>
+    <string name="fine_tuning">手動微調</string>
+    <string name="reset">重設</string>
+    <string name="palette_option">條碼配色 %1$d</string>
+    <string name="palette_unavailable">條碼配色 %1$d，尚未產生</string>
+    <string name="color_red">紅</string>
+    <string name="color_green">綠</string>
+    <string name="color_blue">藍</string>
+    <string name="hex_color">十六進位色碼</string>
+    <string name="invalid_hex">輸入六位色碼，例如 #EAF8FF。</string>
+    <string name="done">完成</string>
+    <string name="red_bars_warning">條碼勿用紅系</string>
+    <string name="bright_background_warning">背景與靜區要更亮</string>
+    <string name="dark_bars_warning">條碼在紅光下要更深</string>
+    <string name="symbol_contrast_warning">符號反差不足</string>
 </resources>

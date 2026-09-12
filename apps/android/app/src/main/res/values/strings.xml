@@ -23,4 +23,20 @@
     <string name="widget_empty">Open ColorInvo\nto save your carrier</string>
     <string name="preview_empty">Enter a valid carrier\nto preview</string>
     <string name="barcode_preview">Carrier barcode preview %1$s</string>
+    <string name="not_synced">Not synced</string>
+    <string name="save_error">Couldn’t sync</string>
+    <string name="fine_tuning">Fine-tune colors</string>
+    <string name="reset">Reset</string>
+    <string name="palette_option">Barcode palette %1$d</string>
+    <string name="palette_unavailable">Barcode palette %1$d, not generated yet</string>
+    <string name="color_red">Red</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="hex_color">Hex color</string>
+    <string name="invalid_hex">Enter six hex digits, such as #EAF8FF.</string>
+    <string name="done">Done</string>
+    <string name="red_bars_warning">Avoid red hues for barcode bars.</string>
+    <string name="bright_background_warning">Choose a lighter background and quiet zone.</string>
+    <string name="dark_bars_warning">Bars need to be darker under red light.</string>
+    <string name="symbol_contrast_warning">Increase the contrast between bars and background.</string>
 </resources>
