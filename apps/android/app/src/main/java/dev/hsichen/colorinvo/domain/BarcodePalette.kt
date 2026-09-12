@@ -1,6 +1,5 @@
 package dev.hsichen.colorinvo.domain
 
-import android.graphics.Color
 import kotlin.math.max
 import kotlin.math.min
 
@@ -17,19 +16,16 @@ data class RgbaColor(
     )
 
     val argb: Int
-        get() = Color.argb(
-            (alpha * 255).toInt().coerceIn(0, 255),
-            (red * 255).toInt().coerceIn(0, 255),
-            (green * 255).toInt().coerceIn(0, 255),
-            (blue * 255).toInt().coerceIn(0, 255),
-        )
+        get() = (channel(alpha) shl 24) or (channel(red) shl 16) or (channel(green) shl 8) or channel(blue)
 
     val hex: String
         get() = "#%02X%02X%02X".format(
-            (red * 255).toInt().coerceIn(0, 255),
-            (green * 255).toInt().coerceIn(0, 255),
-            (blue * 255).toInt().coerceIn(0, 255),
+            channel(red),
+            channel(green),
+            channel(blue),
         )
+
+    private fun channel(value: Double) = kotlin.math.round(value * 255).toInt().coerceIn(0, 255)
 
     val scannerReflectance: Double get() = red
 
@@ -61,6 +57,9 @@ data class BarcodePalette(
     val barColor: RgbaColor,
     val backgroundColor: RgbaColor,
 ) {
+    fun hasSameColors(other: BarcodePalette?): Boolean =
+        other != null && barColor.hex == other.barColor.hex && backgroundColor.hex == other.backgroundColor.hex
+
     val scannerSymbolContrast: Double
         get() = (backgroundColor.scannerReflectance - barColor.scannerReflectance).coerceAtLeast(0.0)
 

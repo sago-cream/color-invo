@@ -14,6 +14,11 @@ class CarrierCodeTest {
         assertTrue(CarrierCode.isValid("/A1+-.Z9"))
     }
 
+    @Test fun doesNotSilentlyTruncateAPastedCarrier() {
+        assertEquals("/ABC12345", CarrierCode.fromSuffix("ABC12345"))
+        assertFalse(CarrierCode.isValid(CarrierCode.fromSuffix("ABC12345")))
+    }
+
     @Test fun rejectsWrongLengthAndUnsupportedCharacters() {
         assertFalse(CarrierCode.isValid("/ABC123"))
         assertFalse(CarrierCode.isValid("/ABC_123"))
