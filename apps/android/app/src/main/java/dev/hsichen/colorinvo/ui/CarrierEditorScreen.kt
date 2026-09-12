@@ -180,6 +180,7 @@ fun CarrierEditorScreen(model: CarrierEditorViewModel = viewModel()) {
                 }
                 if (!state.settings.palette.meetsCommercialGuidance) Text(scanMessage, color = Warning, style = MaterialTheme.typography.bodySmall)
             }
+            AppInformation()
         }
     }
 }

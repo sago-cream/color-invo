@@ -11,7 +11,7 @@ export const COPY = {
         demoLabel: 'ColorInvo app screen demo',
         detailsLabel: 'Feature summary',
         htmlLang: 'en',
-        lastUpdated: 'July 3, 2026',
+        lastUpdated: 'September 12, 2026',
         metadata: {
             home: {
                 description:
@@ -58,7 +58,7 @@ export const COPY = {
                     },
                     {
                         items: [
-                            'Carrier and color settings are stored in the iOS app group so the app and widget can read the same saved setup.',
+                            'Carrier and color settings are stored in an iOS app group or private Android app storage so the app and widget can read the same saved setup.',
                             'Wallpaper colors are generated on device from the image you select. ColorInvo saves the selected colors and a small local preview for the Home Screen preview.',
                             'If you email support, your email address and message content are used to respond to that request.',
                         ],
@@ -66,20 +66,20 @@ export const COPY = {
                     },
                     {
                         body: [
-                            'ColorInvo only reads the image you choose through the Apple photo picker. The app does not browse your full photo library and does not upload selected images to a ColorInvo service. The preview image stays on your device.',
+                            'ColorInvo only reads the image you choose through the system photo picker. The app does not browse your full photo library and does not upload selected images to a ColorInvo service. The preview image stays on your device.',
                         ],
                         title: 'Photos',
                     },
                     {
                         body: [
-                            'The widget reads saved settings from the shared app group on the same device. ColorInvo does not share those settings with an external ColorInvo server.',
-                            'Apple may process App Store downloads, purchases, diagnostics, crash reports, or TestFlight feedback under Apple policies and your settings.',
+                            'The widget reads saved settings from local app storage on the same device. ColorInvo does not share those settings with an external ColorInvo server.',
+                            'Apple and Google may process store downloads, purchases, diagnostics, crash reports, or testing feedback under their own policies and your settings. Android may back up settings and the wallpaper preview or transfer them to a new device according to system settings.',
                         ],
                         title: 'Sharing',
                     },
                     {
                         body: [
-                            'Local settings stay on the device until you change them, remove them in the app, or uninstall ColorInvo. Support emails are retained as needed to respond to and track the request.',
+                            'You can change saved settings in the app. To delete local data, uninstall ColorInvo or use Clear storage in Android app settings. Manage system backups separately; a backup may restore data after reinstalling. Support emails are retained as needed to respond to and track the request.',
                         ],
                         title: 'Retention and control',
                     },
@@ -102,7 +102,7 @@ export const COPY = {
                 contactTitle: 'Contact',
                 issues: [
                     {
-                        body: 'Reopen ColorInvo, confirm that the carrier format is valid, save again, then wait for iOS to refresh the widget.',
+                        body: 'Reopen ColorInvo, confirm that the carrier format is valid and colors are scanner-ready, then wait for the synced indicator and the system to refresh the widget.',
                         icon: 'phone',
                         title: 'Widget does not show the barcode',
                     },
@@ -119,8 +119,8 @@ export const COPY = {
                 ],
                 reportIntro: 'Please include:',
                 reportItems: [
-                    'Device model and iOS version.',
-                    'ColorInvo version from the App Store or TestFlight.',
+                    'Device model and iOS or Android version.',
+                    'ColorInvo version from the app store or testing build.',
                     'A screenshot or screen recording when it helps explain the issue.',
                     'Steps to reproduce, including whether the issue is in the app or widget.',
                 ],
@@ -128,9 +128,9 @@ export const COPY = {
                 responseTime:
                     'Support is handled by the app developer. Most messages receive a reply within 1-3 business days.',
                 setupItems: [
-                    'Open ColorInvo and enter the 8-character carrier after the leading slash.',
+                    'Open ColorInvo and enter the seven characters after the leading slash (eight characters total).',
                     'Choose barcode colors, or generate colors from a wallpaper photo on device.',
-                    'Save, then add the ColorInvo widget from the iOS Home Screen widget picker.',
+                    'Wait for settings to sync automatically, then add ColorInvo from the Home Screen widget picker on iOS or Android.',
                 ],
                 setupTitle: 'Setup checklist',
                 supportUrlLabel: 'Support URL:',
@@ -152,7 +152,7 @@ export const COPY = {
         demoLabel: '條色盤畫面示意',
         detailsLabel: '功能概要',
         htmlLang: 'zh-Hant-TW',
-        lastUpdated: '2026 年 7 月 3 日',
+        lastUpdated: '2026 年 9 月 12 日',
         metadata: {
             home: {
                 description:
@@ -199,7 +199,7 @@ export const COPY = {
                     },
                     {
                         items: [
-                            '手機條碼與配色設定會儲存在系統的應用程式群組，讓應用程式與小工具讀取同一份設定。',
+                            '手機條碼與配色設定會儲存在 iOS 應用程式群組或 Android 應用程式的私有空間，讓應用程式與小工具讀取同一份設定。',
                             '桌布配色由你選擇的圖片在裝置上產生。條色盤會儲存選定的配色，以及用於主畫面預覽的小型本機預覽圖。',
                             '如果你寄信聯絡支援，寄件地址與信件內容會用於回覆該次請求。',
                         ],
@@ -207,20 +207,20 @@ export const COPY = {
                     },
                     {
                         body: [
-                            '條色盤只會透過 Apple 照片選擇器讀取你選擇的圖片。應用程式不會瀏覽完整照片圖庫，也不會把選取圖片上傳到條色盤服務。預覽圖會留在你的裝置上。',
+                            '條色盤只會透過系統照片選擇器讀取你選擇的圖片。應用程式不會瀏覽完整照片圖庫，也不會把選取圖片上傳到條色盤服務。預覽圖會留在你的裝置上。',
                         ],
                         title: '照片',
                     },
                     {
                         body: [
-                            '小工具會從同一台裝置的共享應用程式群組讀取已儲存設定。條色盤不會把這些設定分享給外部伺服器。',
-                            'Apple 可能依照 Apple 政策與使用者設定處理 App Store 下載、購買、診斷資料、當機報告或 TestFlight 回饋。',
+                            '小工具會從同一台裝置的本機應用程式儲存空間讀取已儲存設定。條色盤不會把這些設定分享給外部伺服器。',
+                            'Apple 與 Google 可能依照各自政策與使用者設定處理商店下載、購買、診斷資料、當機報告或測試回饋。Android 可能依系統設定備份設定與桌布預覽圖，或移轉至新裝置。',
                         ],
                         title: '分享',
                     },
                     {
                         body: [
-                            '本機設定會留在裝置上，直到你變更設定、在應用程式中移除，或解除安裝條色盤。支援信件會視回覆與追蹤請求所需保留。',
+                            '你可以在應用程式中變更設定。若要刪除本機資料，請解除安裝條色盤，或在 Android 應用程式設定中清除儲存空間。系統備份需另行管理；重新安裝後可能從備份還原資料。支援信件會視回覆與追蹤請求所需保留。',
                         ],
                         title: '保留與控制',
                     },
@@ -243,7 +243,7 @@ export const COPY = {
                 contactTitle: '聯絡方式',
                 issues: [
                     {
-                        body: '重新開啟條色盤，確認手機條碼格式正確並儲存，再稍等系統更新小工具內容。',
+                        body: '重新開啟條色盤，確認手機條碼格式正確且配色適合掃描，等候顯示已同步，再稍等系統更新小工具內容。',
                         icon: 'phone',
                         title: '小工具沒有顯示條碼',
                     },
@@ -269,9 +269,9 @@ export const COPY = {
                 responseTime:
                     '支援由應用程式開發者處理，多數訊息會在 1-3 個工作天內回覆。',
                 setupItems: [
-                    '開啟條色盤，輸入斜線後方 8 碼手機條碼載具。',
+                    '開啟條色盤，輸入斜線後方七碼手機條碼載具（含斜線共八碼）。',
                     '選擇條碼配色，或從桌布照片在裝置上產生配色。',
-                    '儲存後，到主畫面小工具選單加入條色盤。',
+                    '等候設定自動同步後，到 iOS 或 Android 主畫面的小工具選單加入條色盤。',
                 ],
                 setupTitle: '設定檢查',
                 supportUrlLabel: '支援網址：',
