@@ -58,8 +58,11 @@ bun run android:test:device
 建置條色盤、啟動並開啟可用的 iPhone 模擬器，然後安裝與執行 App：
 
 ```sh
-bun run simulator
+bun run ios
 ```
+
+在連接的 iPhone 上執行：`bun run iphone`。若要保留現有 App 資料，請使用
+`IOS_PRESERVE_APP_DATA=1 bun run iphone`。
 
 ## 授權
 
