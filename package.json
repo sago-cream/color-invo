@@ -17,18 +17,15 @@
     "archive": "scripts/ios-archive.sh",
     "build": "scripts/ios-build.sh",
     "check": "scripts/ios-check.sh",
-    "device": "scripts/ios-run-device.sh",
     "export": "scripts/ios-export.sh",
     "generate": "xcodegen generate",
-    "ios": "scripts/ios-run-device.sh",
+    "ios": "scripts/ios-run-simulator.sh",
     "ios:generate": "xcodegen generate",
     "ios:mock": "scripts/ios-run-mock-device.sh",
     "ios:check": "scripts/ios-check.sh",
     "ios:screenshots": "scripts/ios-capture-app-store-screenshots.sh",
     "ios:test": "scripts/ios-test.sh",
     "ios:build": "scripts/ios-build.sh",
-    "ios:simulator": "scripts/ios-run-simulator.sh",
-    "ios:device": "scripts/ios-run-device.sh",
     "ios:archive": "scripts/ios-archive.sh",
     "ios:export": "scripts/ios-export.sh",
     "ios:upload": "scripts/ios-upload.sh",
@@ -38,7 +35,6 @@
     "release": "scripts/ios-release.sh",
     "screenshot-chat": "scripts/ios-screenshot-chat.sh",
     "screenshots": "scripts/ios-capture-app-store-screenshots.sh",
-    "simulator": "scripts/ios-run-simulator.sh",
     "upload": "scripts/ios-upload.sh",
     "web:build": "bun run --cwd apps/web build",
     "web:check": "bun run --cwd apps/web check",
@@ -46,6 +42,7 @@
     "android:store:check": "python3 scripts/android-store-check.py",
     "android:candidate": "scripts/android-candidate.sh",
     "android:promote": "scripts/android-promote.sh",
-    "android:policy:check": "python3 scripts/android-policy-check.py"
+    "android:policy:check": "python3 scripts/android-policy-check.py",
+    "iphone": "scripts/ios-run-device.sh"
   }
 }

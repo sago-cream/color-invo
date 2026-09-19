@@ -65,8 +65,11 @@ See the [release guide](apps/android/PLAY_RELEASE.md) for the exact secrets, fir
 Build ColorInvo, boot and open an available iPhone simulator, install the app, and launch it:
 
 ```sh
-bun run simulator
+bun run ios
 ```
+
+Run on a connected iPhone with `bun run iphone`. To keep existing app data, use
+`IOS_PRESERVE_APP_DATA=1 bun run iphone`.
 
 ## Codex iOS simulator screenshots
 
