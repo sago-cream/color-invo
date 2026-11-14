@@ -6,6 +6,7 @@ struct ContentView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @StateObject private var model: CarrierEditorModel
     @FocusState private var carrierFieldFocused: Bool
+    @State private var step: EditorStep = .carrier
 
     private var carrierSuffixBinding: Binding<String> {
         Binding(
@@ -28,29 +29,32 @@ struct ContentView: View {
 #endif
 
     var body: some View {
-        ScrollViewReader { scrollProxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    scrollContentSections
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 28)
-                .padding(.bottom, 24)
-                .frame(maxWidth: .infinity, alignment: .top)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(ColorInvoColor.background.ignoresSafeArea())
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
 #if DEBUG
-            .onAppear {
-                guard opensWidgetScreenshot else {
-                    return
+                if opensWidgetScreenshot {
+                    widgetSection
+                } else {
+                    stepContent
                 }
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    scrollProxy.scrollTo(Self.widgetScreenshotSectionID, anchor: .top)
-                }
+#else
+                stepContent
+#endif
             }
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(ColorInvoColor.background.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+#if DEBUG
+            if !opensWidgetScreenshot {
+                navigationControls
+            }
+#else
+            navigationControls
 #endif
         }
         .preferredColorScheme(.light)
@@ -58,32 +62,122 @@ struct ContentView: View {
         .task {
             await model.start()
         }
-    }
-
-    private static let widgetScreenshotSectionID = "colorinvo-widget-screenshot-section"
-
-    @ViewBuilder
-    private var scrollContentSections: some View {
-#if DEBUG
-        if opensWidgetScreenshot {
-            widgetSection
-                .id(Self.widgetScreenshotSectionID)
-
-            Color.clear
-                .frame(height: 520)
-        } else {
-            editorSections
+        .onChange(of: step) { _, _ in
+            carrierFieldFocused = false
         }
-#else
-        editorSections
-#endif
     }
 
-    @ViewBuilder
-    private var editorSections: some View {
-        widgetSection
-        carrierSection
-        themeSection
+    private var stepContent: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("步驟 \(step.rawValue + 1) / \(EditorStep.allCases.count)")
+                    .colorInvoText(.secondary)
+                    .accessibilityIdentifier("setupProgress")
+
+                HStack(spacing: 8) {
+                    ForEach(EditorStep.allCases) { item in
+                        Capsule()
+                            .fill(item.rawValue <= step.rawValue ? ColorInvoColor.primary : ColorInvoColor.hairline)
+                            .frame(height: 4)
+                    }
+                }
+                .accessibilityHidden(true)
+
+                Text(step.title)
+                    .font(.title2.bold())
+                    .foregroundStyle(ColorInvoColor.text)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("setupTitle")
+
+                Text(step.instruction)
+                    .colorInvoText(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            switch step {
+            case .carrier:
+                carrierSection
+            case .style:
+                widgetSection
+            case .colors:
+                widgetPreview
+                themeSection
+                if !model.draftPalette.meetsCommercialGuidance {
+                    Text(model.draftPalette.standardMessage)
+                        .colorInvoText(.secondary)
+                        .foregroundStyle(ColorInvoColor.warning)
+                }
+            case .install:
+                widgetPreview
+                widgetSaveStatus
+                VStack(alignment: .leading, spacing: 20) {
+                    installInstruction(number: 1, text: "長按主畫面空白處，直到 App 開始晃動。")
+                    installInstruction(number: 2, text: "點選「編輯」或「＋」，再選擇「加入小工具」。")
+                    installInstruction(number: 3, text: "搜尋「條色盤」或「ColorInvo」，加入主畫面後點選「完成」。")
+                }
+                Text("之後可開啟 App 調整樣式，設定會自動同步至小工具。")
+                    .colorInvoText(.secondary)
+            }
+        }
+        .id(step)
+    }
+
+    private func installInstruction(number: Int, text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .colorInvoText(.control)
+                .foregroundStyle(ColorInvoColor.primary)
+                .frame(width: 28, height: 28)
+                .background(ColorInvoColor.primarySoft, in: Circle())
+            Text(text)
+                .font(.body)
+                .foregroundStyle(ColorInvoColor.text)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var canContinue: Bool {
+        switch step {
+        case .carrier: model.isValid
+        case .style: true
+        case .colors: model.canCreateSettings && !model.isAnalyzingWallpaper
+        case .install: true
+        }
+    }
+
+    private var navigationControls: some View {
+        HStack(spacing: 12) {
+            if step != .carrier {
+                Button("上一步") {
+                    step = EditorStep(rawValue: step.rawValue - 1) ?? .carrier
+                }
+                .colorInvoText(.control)
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("setupBackButton")
+            }
+
+            Button {
+                step = EditorStep(rawValue: step.rawValue + 1) ?? .carrier
+            } label: {
+                Text(step.nextTitle)
+                    .font(.callout.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .foregroundStyle(.white)
+                    .background(ColorInvoColor.primary, in: RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .disabled(!canContinue)
+            .colorInvoDisabledState(!canContinue)
+            .accessibilityIdentifier("setupNextButton")
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(ColorInvoColor.surface)
+        .overlay(alignment: .top) {
+            ColorInvoColor.hairline.frame(height: 1)
+        }
     }
 
     private var carrierSection: some View {
@@ -112,6 +206,8 @@ struct ContentView: View {
                     .padding(.leading, 16)
 
                 TextField("ABC1234", text: carrierSuffixBinding)
+                    .accessibilityLabel("手機載具")
+                    .accessibilityIdentifier("carrierCodeField")
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .keyboardType(.asciiCapable)
@@ -418,31 +514,7 @@ struct ContentView: View {
             .accessibilityLabel("小工具樣式")
             .accessibilityIdentifier("decorationPicker")
 
-            ZStack {
-                WallpaperPreviewBackground(preview: model.wallpaperPreviewImage)
-
-                CarrierWidgetContentView(
-                    carrierCode: model.previewCode,
-                    palette: model.draftPalette,
-                    dominantColors: model.wallpaperDominantColors,
-                    waveColor: model.selectedWaveColor,
-                    showsWave: model.decoration.showsWave,
-                    showsBarcodeValue: model.showsBarcodeValue,
-                    showsCat: model.decoration.showsCat,
-                    emptyStateText: "輸入載具即可預覽"
-                )
-                .aspectRatio(329 / 155, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .shadow(color: .black.opacity(0.16), radius: 12, x: 0, y: 8)
-                .padding(16)
-            }
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(.black.opacity(0.10), lineWidth: 1)
-            }
+            widgetPreview
 
             Toggle(isOn: showsBarcodeValueBinding) {
                 Text("顯示載具文字")
@@ -462,12 +534,75 @@ struct ContentView: View {
         }
     }
 
+    private var widgetPreview: some View {
+        ZStack {
+            WallpaperPreviewBackground(preview: model.wallpaperPreviewImage)
+
+            CarrierWidgetContentView(
+                carrierCode: model.previewCode,
+                palette: model.draftPalette,
+                dominantColors: model.wallpaperDominantColors,
+                waveColor: model.selectedWaveColor,
+                showsWave: model.decoration.showsWave,
+                showsBarcodeValue: model.showsBarcodeValue,
+                showsCat: model.decoration.showsCat,
+                emptyStateText: "輸入載具即可預覽"
+            )
+            .aspectRatio(329 / 155, contentMode: .fit)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: .black.opacity(0.16), radius: 12, x: 0, y: 8)
+            .padding(16)
+        }
+        .frame(height: 220)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(.black.opacity(0.10), lineWidth: 1)
+        }
+    }
+
     private var widgetSaveStatus: some View {
         HeaderStatusLabel(
-            model.widgetStatusText,
-            tone: model.isSavingSettings ? .neutral : .success,
-            systemImage: model.isSavingSettings ? "arrow.triangle.2.circlepath" : nil
+            !model.canCreateSettings ? "尚未同步" : model.widgetIsReady ? "已同步" : "儲存中",
+            tone: model.widgetIsReady ? .success : .neutral,
+            systemImage: model.widgetIsReady ? nil : "arrow.triangle.2.circlepath"
         )
+        .accessibilityIdentifier("widgetSaveStatus")
+    }
+
+}
+
+private enum EditorStep: Int, CaseIterable, Identifiable {
+    case carrier, style, colors, install
+
+    var id: Self { self }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .carrier: "輸入手機載具"
+        case .style: "選擇小工具樣式"
+        case .colors: "搭配你的桌布"
+        case .install: "加入主畫面"
+        }
+    }
+
+    var instruction: LocalizedStringKey {
+        switch self {
+        case .carrier: "輸入斜線後的 7 碼英數字或符號（+、-、.），斜線已為你填好。"
+        case .style: "選擇喜歡的樣式，預覽小工具的外觀。"
+        case .colors: "匯入桌布取色，或直接使用目前的配色。"
+        case .install: "設定會自動儲存。確認已同步後，依下列步驟加入小工具。"
+        }
+    }
+
+    var nextTitle: LocalizedStringKey {
+        switch self {
+        case .carrier: "下一步：選擇樣式"
+        case .style: "下一步：調整配色"
+        case .colors: "下一步：加入小工具"
+        case .install: "重新編輯"
+        }
     }
 }
 

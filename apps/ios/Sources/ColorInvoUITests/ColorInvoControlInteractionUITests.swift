@@ -48,6 +48,7 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
     func testWallpaperPaletteControlsStayAvailableForEveryStyle() {
         launchShowcaseApp()
 
+        openColors()
         let paletteButton = app.buttons["wallpaperPaletteOption.0"]
         XCTAssertTrue(
             paletteButton.waitForExistence(timeout: 3),
@@ -56,26 +57,57 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
         XCTAssertTrue(paletteButton.isEnabled, "wallpaper palettes should be enabled for cat")
 
         selectDecoration("顏料")
+        openColors()
         XCTAssertTrue(paletteButton.isEnabled, "wallpaper palettes should be enabled for paint")
 
         selectDecoration("極簡")
+        openColors()
         XCTAssertTrue(paletteButton.isEnabled, "wallpaper palettes should be enabled for minimal")
+    }
+
+    func testSetupRequiresValidCarrierAndPreservesChoicesWhenGoingBack() {
+        launchShowcaseApp()
+        let field = app.textFields["carrierCodeField"]
+        let next = app.buttons["setupNextButton"]
+        field.tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 7))
+        XCTAssertFalse(next.isEnabled, "An empty carrier must not advance")
+        field.typeText("ABC")
+        XCTAssertFalse(next.isEnabled, "An incomplete carrier must not advance")
+        field.typeText("1234")
+        XCTAssertTrue(next.isEnabled)
+        next.tap()
+        XCTAssertFalse(field.exists)
+
+        selectDecoration("極簡")
+        openColors()
+        perform(.palette(1))
+        next.tap()
+        XCTAssertTrue(app.staticTexts["加入主畫面"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["wallpaperPaletteOption.1"].exists)
+        app.buttons["setupBackButton"].tap()
+        XCTAssertEqual(app.buttons["wallpaperPaletteOption.1"].value as? String, "selected")
+        app.buttons["setupBackButton"].tap()
+        XCTAssertTrue(app.segmentedControls["decorationPicker"].buttons["極簡"].isSelected)
+        app.buttons["setupBackButton"].tap()
+        XCTAssertEqual(field.value as? String, "ABC1234")
     }
 
     private func launchShowcaseApp() {
         app?.terminate()
         app = XCUIApplication()
-        app.launchArguments = ["--showcase-data"]
+        app.launchArguments = ["--showcase-data", "-AppleLanguages", "(zh-Hant)"]
         app.launchEnvironment["COLORINVO_SHOWCASE_DATA"] = "1"
         app.launch()
 
         XCTAssertTrue(
-            app.buttons["wallpaperPaletteOption.0"].waitForExistence(timeout: 8),
-            "Showcase wallpaper palette options should load"
+            app.textFields["carrierCodeField"].waitForExistence(timeout: 8),
+            "Carrier entry should be the first page"
         )
     }
 
     private func perform(_ operation: ControlOperation) {
+        openColors()
         switch operation {
         case .palette:
             let button = app.buttons[operation.identifier]
@@ -90,7 +122,21 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
         }
     }
 
+    private func openColors() {
+        if app.textFields["carrierCodeField"].exists {
+            app.buttons["setupNextButton"].tap()
+        }
+        if app.segmentedControls["decorationPicker"].exists {
+            app.buttons["setupNextButton"].tap()
+        }
+    }
+
     private func selectDecoration(_ label: String) {
+        if app.textFields["carrierCodeField"].exists {
+            app.buttons["setupNextButton"].tap()
+        } else if app.buttons["wallpaperPaletteOption.0"].exists {
+            app.buttons["setupBackButton"].tap()
+        }
         let picker = app.segmentedControls["decorationPicker"]
         XCTAssertTrue(picker.waitForExistence(timeout: 3), "decoration picker should exist")
 
