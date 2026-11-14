@@ -47,6 +47,7 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .scrollDismissesKeyboard(.interactively)
+        .id(step)
         .background(ColorInvoColor.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) {
 #if DEBUG
@@ -119,7 +120,6 @@ struct ContentView: View {
                     .colorInvoText(.secondary)
             }
         }
-        .id(step)
     }
 
     private func installInstruction(number: Int, text: LocalizedStringKey) -> some View {
@@ -152,7 +152,7 @@ struct ContentView: View {
                     step = EditorStep(rawValue: step.rawValue - 1) ?? .carrier
                 }
                 .colorInvoText(.control)
-                .frame(minHeight: 44)
+                .frame(minWidth: 44, minHeight: 44)
                 .accessibilityIdentifier("setupBackButton")
             }
 
@@ -160,6 +160,7 @@ struct ContentView: View {
                 step = EditorStep(rawValue: step.rawValue + 1) ?? .carrier
             } label: {
                 Text(step.nextTitle)
+                    .multilineTextAlignment(.center)
                     .font(.callout.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .padding(.horizontal, 12)
