@@ -25,10 +25,7 @@
     <string name="barcode_preview">載具條碼預覽 %1$s</string>
     <string name="not_synced">尚未同步</string>
     <string name="save_error">無法同步</string>
-    <string name="fine_tuning">手動微調</string>
-    <string name="reset">重設</string>
     <string name="palette_option">條碼配色 %1$d</string>
-    <string name="palette_unavailable">條碼配色 %1$d，尚未產生</string>
     <string name="color_red">紅</string>
     <string name="color_green">綠</string>
     <string name="color_blue">藍</string>
@@ -55,10 +52,18 @@
     <string name="setup_next_style">下一步：選擇樣式</string>
     <string name="setup_next_colors">下一步：調整配色</string>
     <string name="setup_next_install">下一步：加入小工具</string>
-    <string name="setup_restart">重新編輯</string>
+    <string name="setup_restart">調整樣式</string>
     <string name="setup_back">上一步</string>
     <string name="setup_install_one">長按主畫面空白處。</string>
     <string name="setup_install_two">開啟小工具選單，找到「條色盤」或「ColorInvo」。選單依桌面啟動器而異。</string>
     <string name="setup_install_three">將小工具拖曳到主畫面，再依需要調整大小。</string>
     <string name="setup_edit_hint">點一下小工具即可編輯，設定會自動同步。</string>
+    <string name="change_wallpaper">更換桌布</string>
+    <string name="custom_colors">自訂顏色</string>
+    <string name="restore_wallpaper_colors">還原桌布配色</string>
+    <string name="use_classic_palette">使用黑白配色</string>
+    <string name="edit_carrier">編輯載具</string>
+    <string name="palette_short">配色 %1$d</string>
+    <string name="control_expanded">已展開</string>
+    <string name="control_collapsed">已收合</string>
 </resources>

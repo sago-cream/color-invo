@@ -66,6 +66,7 @@ class PlayStoreScreenshotTest {
         composeRule.waitUntil(5000) { model.state.value.widgetIsReady }
         captureScreen("phoneScreenshots/2_paint.png")
         composeRule.onNodeWithTag("setup-next").performClick()
+        composeRule.onNodeWithTag("custom-colors").performScrollTo().performClick()
         composeRule.onNodeWithTag("background-color").performScrollTo().performClick()
         captureScreen("phoneScreenshots/3_colors.png")
         composeRule.onNodeWithTag("color-picker-done").performClick()
