@@ -58,13 +58,19 @@ class PlayStoreScreenshotTest {
         composeRule.waitForIdle()
         val model = ViewModelProvider(composeRule.activity)[CarrierEditorViewModel::class.java]
         composeRule.waitUntil(5000) { model.state.value.wallpaperPreview != null }
+        composeRule.onNodeWithTag("setup-next").performClick()
+        composeRule.onNodeWithTag("setup-next").performClick()
         captureScreen("phoneScreenshots/1_wallpaper.png")
+        composeRule.onNodeWithTag("setup-back").performClick()
         composeRule.onNodeWithTag("decoration-wave").performClick()
         composeRule.waitUntil(5000) { model.state.value.widgetIsReady }
         captureScreen("phoneScreenshots/2_paint.png")
+        composeRule.onNodeWithTag("setup-next").performClick()
+        composeRule.onNodeWithTag("custom-colors").performScrollTo().performClick()
         composeRule.onNodeWithTag("background-color").performScrollTo().performClick()
         captureScreen("phoneScreenshots/3_colors.png")
         composeRule.onNodeWithTag("color-picker-done").performClick()
+        composeRule.onNodeWithTag("setup-next").performClick()
         // Also exercise the offline policy through its real, scrollable entry point.
         composeRule.onNodeWithTag("privacy").performScrollTo().performClick()
         composeRule.onNodeWithTag("app-information").assertIsDisplayed()

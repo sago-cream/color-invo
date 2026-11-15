@@ -41,6 +41,7 @@ internal fun ColorControl(label: String, value: String, onValueChange: (String) 
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
+        Text(value, style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace), color = Muted)
         Spacer(Modifier.width(EditorMetrics.smallGap))
         Box(Modifier.size(EditorMetrics.swatchSize).clip(CircleShape).background(Color(RgbaColor.parse(value)!!.argb)).border(1.dp, Color.Black.copy(alpha = 0.10f), CircleShape))
     }

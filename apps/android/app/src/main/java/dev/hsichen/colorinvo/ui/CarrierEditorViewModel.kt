@@ -109,6 +109,11 @@ class CarrierEditorViewModel(
         updateSettings { copy(palette = base) }
     }
 
+    fun useClassicPalette() {
+        paletteRevision++
+        updateSettings { copy(palette = BarcodePalette.Classic) }
+    }
+
     fun setDecoration(decoration: Decoration) = updateSettings { copy(decoration = decoration) }
     fun setShowsBarcodeValue(value: Boolean) = updateSettings { copy(showsBarcodeValue = value) }
 

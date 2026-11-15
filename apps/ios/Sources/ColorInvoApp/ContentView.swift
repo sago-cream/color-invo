@@ -6,6 +6,8 @@ struct ContentView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @StateObject private var model: CarrierEditorModel
     @FocusState private var carrierFieldFocused: Bool
+    @State private var step: EditorStep = .carrier
+    @State private var showsCustomColors = false
 
     private var carrierSuffixBinding: Binding<String> {
         Binding(
@@ -28,29 +30,33 @@ struct ContentView: View {
 #endif
 
     var body: some View {
-        ScrollViewReader { scrollProxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    scrollContentSections
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 28)
-                .padding(.bottom, 24)
-                .frame(maxWidth: .infinity, alignment: .top)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(ColorInvoColor.background.ignoresSafeArea())
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
 #if DEBUG
-            .onAppear {
-                guard opensWidgetScreenshot else {
-                    return
+                if opensWidgetScreenshot {
+                    widgetSection
+                } else {
+                    stepContent
                 }
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    scrollProxy.scrollTo(Self.widgetScreenshotSectionID, anchor: .top)
-                }
+#else
+                stepContent
+#endif
             }
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+            .padding(.bottom, 24)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .id(step)
+        .background(ColorInvoColor.background.ignoresSafeArea())
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+#if DEBUG
+            if !opensWidgetScreenshot {
+                navigationControls
+            }
+#else
+            navigationControls
 #endif
         }
         .preferredColorScheme(.light)
@@ -58,32 +64,124 @@ struct ContentView: View {
         .task {
             await model.start()
         }
-    }
-
-    private static let widgetScreenshotSectionID = "colorinvo-widget-screenshot-section"
-
-    @ViewBuilder
-    private var scrollContentSections: some View {
-#if DEBUG
-        if opensWidgetScreenshot {
-            widgetSection
-                .id(Self.widgetScreenshotSectionID)
-
-            Color.clear
-                .frame(height: 520)
-        } else {
-            editorSections
+        .onChange(of: step) { _, _ in
+            carrierFieldFocused = false
         }
-#else
-        editorSections
-#endif
     }
 
-    @ViewBuilder
-    private var editorSections: some View {
-        widgetSection
-        carrierSection
-        themeSection
+    private var stepContent: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("步驟 \(step.rawValue + 1) / \(EditorStep.allCases.count)")
+                    .colorInvoText(.secondary)
+                    .accessibilityIdentifier("setupProgress")
+
+                HStack(spacing: 8) {
+                    ForEach(EditorStep.allCases) { item in
+                        Capsule()
+                            .fill(item.rawValue <= step.rawValue ? ColorInvoColor.primary : ColorInvoColor.hairline)
+                            .frame(height: 4)
+                    }
+                }
+                .accessibilityHidden(true)
+
+                Text(step.title)
+                    .font(.title2.bold())
+                    .foregroundStyle(ColorInvoColor.text)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("setupTitle")
+
+                Text(step.instruction)
+                    .colorInvoText(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            switch step {
+            case .carrier:
+                carrierSection
+            case .style:
+                widgetSection
+            case .colors:
+                widgetPreview(height: 160)
+                themeSection
+            case .install:
+                widgetPreview(height: 220)
+                HStack {
+                    widgetSaveStatus
+                    Spacer()
+                    Button("編輯載具") { step = .carrier }
+                        .colorInvoText(.control)
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier("editCarrierButton")
+                }
+                VStack(alignment: .leading, spacing: 20) {
+                    installInstruction(number: 1, text: "長按主畫面空白處，直到 App 開始晃動。")
+                    installInstruction(number: 2, text: "點選「編輯」或「＋」，再選擇「加入小工具」。")
+                    installInstruction(number: 3, text: "搜尋「條色盤」或「ColorInvo」，加入主畫面後點選「完成」。")
+                }
+                Text("之後可開啟 App 調整樣式，設定會自動同步至小工具。")
+                    .colorInvoText(.secondary)
+            }
+        }
+    }
+
+    private func installInstruction(number: Int, text: LocalizedStringKey) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(number)")
+                .colorInvoText(.control)
+                .foregroundStyle(ColorInvoColor.primary)
+                .frame(width: 28, height: 28)
+                .background(ColorInvoColor.primarySoft, in: Circle())
+            Text(text)
+                .font(.body)
+                .foregroundStyle(ColorInvoColor.text)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var canContinue: Bool {
+        switch step {
+        case .carrier: model.isValid
+        case .style: true
+        case .colors: model.canCreateSettings && !model.isAnalyzingWallpaper
+        case .install: true
+        }
+    }
+
+    private var navigationControls: some View {
+        HStack(spacing: 12) {
+            if step != .carrier {
+                Button("上一步") {
+                    step = EditorStep(rawValue: step.rawValue - 1) ?? .carrier
+                }
+                .colorInvoText(.control)
+                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityIdentifier("setupBackButton")
+            }
+
+            Button {
+                step = step == .install ? .style : EditorStep(rawValue: step.rawValue + 1) ?? .carrier
+            } label: {
+                Text(step.nextTitle)
+                    .multilineTextAlignment(.center)
+                    .font(.callout.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .foregroundStyle(.white)
+                    .background(ColorInvoColor.primary, in: RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .disabled(!canContinue)
+            .colorInvoDisabledState(!canContinue)
+            .accessibilityIdentifier("setupNextButton")
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
+        .background(ColorInvoColor.surface)
+        .overlay(alignment: .top) {
+            ColorInvoColor.hairline.frame(height: 1)
+        }
     }
 
     private var carrierSection: some View {
@@ -112,10 +210,12 @@ struct ContentView: View {
                     .padding(.leading, 16)
 
                 TextField("ABC1234", text: carrierSuffixBinding)
+                    .accessibilityLabel("手機載具")
+                    .accessibilityIdentifier("carrierCodeField")
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .keyboardType(.asciiCapable)
-                    .submitLabel(.done)
+                    .submitLabel(.next)
                     .focused($carrierFieldFocused)
                     .colorInvoText(.code)
                     .tint(ColorInvoColor.primary)
@@ -123,7 +223,10 @@ struct ContentView: View {
                     .padding(.trailing, 16)
                     .padding(.vertical, 10)
                     .onSubmit {
-                        carrierFieldFocused = false
+                        if model.isValid {
+                            carrierFieldFocused = false
+                            step = .style
+                        }
                     }
             }
             .background {
@@ -173,6 +276,17 @@ struct ContentView: View {
             wallpaperColorSection
             wallpaperPaletteChoices
             paletteFineTuningSection
+            if !model.draftPalette.meetsCommercialGuidance {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(LocalizedStringKey(model.draftPalette.standardMessage))
+                        .colorInvoText(.secondary)
+                        .foregroundStyle(ColorInvoColor.warning)
+                    Button("使用黑白配色") { model.useClassicPalette() }
+                        .colorInvoText(.control)
+                        .frame(minHeight: 44)
+                        .accessibilityIdentifier("useClassicPaletteButton")
+                }
+            }
         }
     }
 
@@ -182,20 +296,33 @@ struct ContentView: View {
             matching: .images,
             photoLibrary: .shared()
         ) {
-            Label("匯入桌布", systemImage: "photo.on.rectangle")
-                .colorInvoText(.control)
-                .foregroundStyle(ColorInvoColor.primary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .background(ColorInvoColor.primarySoft)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            HStack(spacing: 12) {
+                if let preview = model.wallpaperPreviewImage {
+                    Image(uiImage: preview.image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .accessibilityHidden(true)
+                } else {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.title2)
+                        .frame(width: 48, height: 48)
+                }
+                Text(model.wallpaperPreviewImage == nil ? "匯入桌布" : "更換桌布")
+                    .colorInvoText(.control)
+                Spacer()
+                Image(systemName: "plus")
+            }
+            .foregroundStyle(ColorInvoColor.primary)
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .background(ColorInvoColor.primarySoft, in: RoundedRectangle(cornerRadius: 20))
         }
         .buttonStyle(.plain)
         .disabled(model.isAnalyzingWallpaper)
         .colorInvoDisabledState(model.isAnalyzingWallpaper)
+        .accessibilityIdentifier("importWallpaperButton")
         .onChange(of: model.wallpaperPickerItem) { _, item in
             model.loadWallpaperPalettes(from: item)
         }
@@ -204,119 +331,89 @@ struct ContentView: View {
     private var wallpaperPaletteChoices: some View {
         VStack(alignment: .leading, spacing: 8) {
             paletteStatus
-            paletteButtonRow(model.wallpaperPalettes)
+            if model.hasWallpaperColors {
+                Text("桌布配色")
+                    .colorInvoText(.secondary)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 8)], spacing: 8) {
+                    ForEach(Array(model.wallpaperPalettes.enumerated()), id: \.offset) { index, palette in
+                        let isSelected = palette.barColor == model.draftPalette.barColor
+                            && palette.backgroundColor == model.draftPalette.backgroundColor
+                        Button { model.selectPalette(palette) } label: {
+                            VStack(spacing: 8) {
+                                Code39BarcodeView(
+                                    value: model.previewCode,
+                                    barColor: palette.barColor.color,
+                                    backgroundColor: palette.backgroundColor.color
+                                )
+                                .frame(height: 36)
+                                .padding(8)
+                                .background(palette.backgroundColor.color)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .accessibilityHidden(true)
+                                HStack(spacing: 4) {
+                                    Text("配色 \(index + 1)")
+                                        .colorInvoText(.control)
+                                    Spacer(minLength: 0)
+                                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(isSelected ? ColorInvoColor.primary : ColorInvoColor.muted)
+                                }
+                            }
+                            .padding(8)
+                            .selectionCard(isSelected: isSelected, radius: 16)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(model.isAnalyzingWallpaper)
+                        .accessibilityLabel("條碼配色 \(index + 1)")
+                        .accessibilityValue(isSelected ? "selected" : "not selected")
+                        .accessibilityAddTraits(isSelected ? .isSelected : [])
+                        .accessibilityIdentifier("wallpaperPaletteOption.\(index)")
+                    }
+                }
+            }
         }
     }
 
     @ViewBuilder
     private var paletteStatus: some View {
         if model.isAnalyzingWallpaper {
-            Label("正在分析桌布…", systemImage: "sparkles")
-                .colorInvoText(.secondary)
-                .frame(minHeight: 40, alignment: .leading)
-        } else if let wallpaperStatusText = model.wallpaperStatusText {
-            Text(wallpaperStatusText)
-                .colorInvoText(.secondary)
-                .frame(minHeight: 40, alignment: .leading)
-        }
-    }
-
-    private func paletteButtonRow(_ palettes: [BarcodePalette]) -> some View {
-        let isDisabled = !model.hasWallpaperColors || model.isAnalyzingWallpaper
-
-        return HStack(spacing: 12) {
-            Text("桌布配色")
-                .colorInvoText(.secondary)
-
-            Spacer()
-
             HStack(spacing: 8) {
-                ForEach(0..<3, id: \.self) { index in
-                    let palette = palettes.indices.contains(index) ? palettes[index] : nil
-                    let isSelected = index == model.selectedWallpaperPaletteIndex
-
-                    Button {
-                        if let palette {
-                            model.selectPalette(palette)
-                        }
-                    } label: {
-                        PaletteColorDot(
-                            palette: palette,
-                            isSelected: isSelected
-                        )
-                    }
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-                    .buttonStyle(.plain)
-                    .disabled(
-                        palette == nil
-                            || isDisabled
-                    )
-                    .colorInvoDisabledState(palette == nil && !isDisabled)
-                    .accessibilityLabel(
-                        palette == nil
-                            ? "條碼配色 \(index + 1)，尚未產生"
-                            : "條碼配色 \(index + 1)"
-                    )
-                    .accessibilityValue(isSelected ? "selected" : "not selected")
-                    .accessibilityAddTraits(isSelected ? .isSelected : [])
-                    .accessibilityIdentifier("wallpaperPaletteOption.\(index)")
-                }
+                ProgressView()
+                Text("正在分析桌布…").colorInvoText(.secondary)
             }
+            .frame(minHeight: 44)
+        } else if let wallpaperStatusText = model.wallpaperStatusText {
+            Text(LocalizedStringKey(wallpaperStatusText))
+                .colorInvoText(.secondary)
+                .frame(minHeight: 44, alignment: .leading)
         }
-        .padding(.leading, 12)
-        .padding(.trailing, 8)
-        .frame(maxWidth: .infinity)
-        .frame(height: 44)
-        .background(ColorInvoColor.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(ColorInvoColor.hairline, lineWidth: 1)
-                .allowsHitTesting(false)
-        }
-        .colorInvoDisabledState(isDisabled)
     }
 
     private var paletteFineTuningSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
-                Text("手動微調")
-                    .colorInvoText(.secondary)
-
-                Spacer()
-
-                Button {
-                    model.resetPaletteToWallpaper()
-                } label: {
-                    Label("重設", systemImage: "arrow.counterclockwise")
-                        .colorInvoText(.control)
-                        .foregroundStyle(ColorInvoColor.primary)
-                        .frame(minHeight: 44)
+        DisclosureGroup(isExpanded: $showsCustomColors) {
+            VStack(spacing: 8) {
+                customColorSection
+                    .padding(.top, 8)
+                if model.canResetWallpaperPalette {
+                    Button { model.resetPaletteToWallpaper() } label: {
+                        Label("還原桌布配色", systemImage: "arrow.counterclockwise")
+                            .colorInvoText(.control)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .accessibilityIdentifier("resetWallpaperPaletteButton")
                 }
-                .buttonStyle(.plain)
-                .disabled(!model.canResetWallpaperPalette)
-                .colorInvoDisabledState(!model.canResetWallpaperPalette)
-                .accessibilityIdentifier("resetWallpaperPaletteButton")
             }
-
-            customColorSection
+        } label: {
+            Text("自訂顏色")
+                .colorInvoText(.control)
+                .frame(minHeight: 44)
+                .accessibilityIdentifier("customColorsDisclosure")
         }
     }
 
     private var customColorSection: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(spacing: 8) {
-                    backgroundColorPicker
-                    barColorPicker
-                }
-            } else {
-                HStack(spacing: 8) {
-                    backgroundColorPicker
-                    barColorPicker
-                }
-            }
+        VStack(spacing: 8) {
+            backgroundColorPicker
+            barColorPicker
         }
     }
 
@@ -350,11 +447,19 @@ struct ContentView: View {
     ) -> some View {
         let identifier = title == "背景" ? "backgroundColorPicker" : "barColorPicker"
 
-        return ColorPicker(title, selection: color, supportsOpacity: false)
+        return ColorPicker(selection: color, supportsOpacity: false) {
+            HStack(spacing: 12) {
+                Text(LocalizedStringKey(title))
+                Spacer()
+                Text(RGBAColor(color: color.wrappedValue).hexString)
+                    .font(.system(.callout, design: .monospaced))
+                    .foregroundStyle(ColorInvoColor.muted)
+            }
+        }
             .colorInvoText(.control)
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity)
-            .frame(minHeight: 44)
+            .frame(minHeight: 52)
             .background(ColorInvoColor.surface)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay {
@@ -372,13 +477,6 @@ struct ContentView: View {
         )
     }
 
-    private var decorationBinding: Binding<CarrierDecoration> {
-        Binding(
-            get: { model.decoration },
-            set: { model.setDecoration($0) }
-        )
-    }
-
     private var scanReadinessStatus: some View {
         HeaderStatusLabel(
             model.draftPalette.meetsCommercialGuidance ? "適合掃描" : "對比不足",
@@ -389,59 +487,8 @@ struct ContentView: View {
 
     private var widgetSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("載具小工具")
-                        .colorInvoText(.heading)
-
-                    widgetSaveStatus
-                }
-            } else {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Text("載具小工具")
-                        .colorInvoText(.heading)
-
-                    Spacer()
-
-                    widgetSaveStatus
-                }
-            }
-
-            Picker("小工具樣式", selection: decorationBinding) {
-                Text("貓貓").tag(CarrierDecoration.cat)
-                Text("顏料").tag(CarrierDecoration.wave)
-                Text("極簡").tag(CarrierDecoration.none)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(minHeight: 44)
-            .accessibilityLabel("小工具樣式")
-            .accessibilityIdentifier("decorationPicker")
-
-            ZStack {
-                WallpaperPreviewBackground(preview: model.wallpaperPreviewImage)
-
-                CarrierWidgetContentView(
-                    carrierCode: model.previewCode,
-                    palette: model.draftPalette,
-                    dominantColors: model.wallpaperDominantColors,
-                    waveColor: model.selectedWaveColor,
-                    showsWave: model.decoration.showsWave,
-                    showsBarcodeValue: model.showsBarcodeValue,
-                    showsCat: model.decoration.showsCat,
-                    emptyStateText: "輸入載具即可預覽"
-                )
-                .aspectRatio(329 / 155, contentMode: .fit)
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                .shadow(color: .black.opacity(0.16), radius: 12, x: 0, y: 8)
-                .padding(16)
-            }
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(.black.opacity(0.10), lineWidth: 1)
+            ForEach([CarrierDecoration.cat, .wave, .none], id: \.self) { decoration in
+                styleCard(decoration)
             }
 
             Toggle(isOn: showsBarcodeValueBinding) {
@@ -458,16 +505,154 @@ struct ContentView: View {
                     .strokeBorder(ColorInvoColor.hairline, lineWidth: 1)
                     .allowsHitTesting(false)
             }
+            .contentShape(Rectangle())
+            .onTapGesture { model.setShowsBarcodeValue(!model.showsBarcodeValue) }
             .accessibilityIdentifier("showsBarcodeValueToggle")
         }
     }
 
+    private func styleCard(_ decoration: CarrierDecoration) -> some View {
+        let isSelected = model.decoration == decoration
+        return Button { model.setDecoration(decoration) } label: {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 12) {
+                        styleThumbnail(decoration)
+                            .aspectRatio(329 / 155, contentMode: .fit)
+                        styleCardLabel(decoration, isSelected: isSelected)
+                    }
+                } else {
+                    HStack(spacing: 16) {
+                        styleThumbnail(decoration)
+                            .frame(width: 144, height: 68)
+                        styleCardLabel(decoration, isSelected: isSelected)
+                    }
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .selectionCard(isSelected: isSelected, radius: 20)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(decoration.title)
+        .accessibilityValue(isSelected ? "selected" : "not selected")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityIdentifier("decorationOption.\(decoration.rawValue)")
+    }
+
+    private func styleCardLabel(_ decoration: CarrierDecoration, isSelected: Bool) -> some View {
+        HStack(spacing: 12) {
+            Text(decoration.title)
+                .colorInvoText(.heading)
+            Spacer(minLength: 0)
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                .font(.title3)
+                .foregroundStyle(isSelected ? ColorInvoColor.primary : ColorInvoColor.muted)
+        }
+    }
+
+    private func styleThumbnail(_ decoration: CarrierDecoration) -> some View {
+        scaledWidgetArtwork(decoration)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(.black.opacity(0.10), lineWidth: 1)
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func widgetPreview(height: CGFloat) -> some View {
+        scaledWidgetArtwork(model.decoration)
+            .padding(16)
+            .frame(height: height)
+            .background { WallpaperPreviewBackground(preview: model.wallpaperPreviewImage) }
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(.black.opacity(0.10), lineWidth: 1)
+            }
+    }
+
+    private func scaledWidgetArtwork(_ decoration: CarrierDecoration) -> some View {
+        GeometryReader { geometry in
+            let scale = min(geometry.size.width / 329, geometry.size.height / 155)
+            CarrierWidgetContentView(
+                carrierCode: model.previewCode,
+                palette: model.draftPalette,
+                dominantColors: model.wallpaperDominantColors,
+                waveColor: model.selectedWaveColor,
+                showsWave: decoration.showsWave,
+                showsBarcodeValue: model.showsBarcodeValue,
+                showsCat: decoration.showsCat,
+                emptyStateText: "輸入載具即可預覽"
+            )
+            .frame(width: 329, height: 155)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .scaleEffect(scale, anchor: .topLeading)
+            .frame(width: 329 * scale, height: 155 * scale, alignment: .topLeading)
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("手機條碼 \(model.previewCode)"))
+    }
+
     private var widgetSaveStatus: some View {
         HeaderStatusLabel(
-            model.widgetStatusText,
-            tone: model.isSavingSettings ? .neutral : .success,
-            systemImage: model.isSavingSettings ? "arrow.triangle.2.circlepath" : nil
+            !model.canCreateSettings ? "尚未同步" : model.widgetIsReady ? "已同步" : "儲存中",
+            tone: model.widgetIsReady ? .success : .neutral,
+            systemImage: model.widgetIsReady ? nil : "arrow.triangle.2.circlepath"
         )
+        .accessibilityIdentifier("widgetSaveStatus")
+    }
+
+}
+
+private enum EditorStep: Int, CaseIterable, Identifiable {
+    case carrier, style, colors, install
+
+    var id: Self { self }
+
+    var title: LocalizedStringKey {
+        switch self {
+        case .carrier: "輸入手機載具"
+        case .style: "選擇小工具樣式"
+        case .colors: "搭配你的桌布"
+        case .install: "加入主畫面"
+        }
+    }
+
+    var instruction: LocalizedStringKey {
+        switch self {
+        case .carrier: "輸入斜線後的 7 碼英數字或符號（+、-、.），斜線已為你填好。"
+        case .style: "選擇喜歡的樣式，預覽小工具的外觀。"
+        case .colors: "匯入桌布取色，或直接使用目前的配色。"
+        case .install: "設定會自動儲存。確認已同步後，依下列步驟加入小工具。"
+        }
+    }
+
+    var nextTitle: LocalizedStringKey {
+        switch self {
+        case .carrier: "下一步：選擇樣式"
+        case .style: "下一步：調整配色"
+        case .colors: "下一步：加入小工具"
+        case .install: "調整樣式"
+        }
+    }
+}
+
+private extension CarrierDecoration {
+    var title: LocalizedStringKey {
+        switch self {
+        case .cat: "貓貓"
+        case .wave: "顏料"
+        case .none: "極簡"
+        }
+    }
+}
+
+private extension RGBAColor {
+    var hexString: String {
+        String(format: "#%02X%02X%02X", Int((red * 255).rounded()), Int((green * 255).rounded()), Int((blue * 255).rounded()))
     }
 }
 
@@ -519,7 +704,7 @@ private struct HeaderStatusLabel: View {
 
     var body: some View {
         Label {
-            Text(text)
+            Text(LocalizedStringKey(text))
                 .colorInvoText(.secondary)
                 .foregroundStyle(tone.color)
                 .fixedSize(horizontal: false, vertical: true)
@@ -529,69 +714,7 @@ private struct HeaderStatusLabel: View {
                 .foregroundStyle(tone.color)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(accessibilityText)
-    }
-}
-
-private struct PaletteColorDot: View {
-    let palette: BarcodePalette?
-    let isSelected: Bool
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(isSelected ? ColorInvoColor.primarySoft : ColorInvoColor.surface)
-                .frame(width: 40, height: 40)
-
-            ZStack {
-                Circle()
-                    .fill(palette?.backgroundColor.color ?? ColorInvoColor.surface)
-
-                HStack(spacing: 0) {
-                    Rectangle()
-                        .fill(palette?.barColor.color ?? ColorInvoColor.primarySoft)
-
-                    Color.clear
-                }
-            }
-            .frame(width: 28, height: 28)
-            .clipShape(Circle())
-            .overlay {
-                Circle()
-                    .strokeBorder(ColorInvoColor.hairline, lineWidth: 1)
-                    .allowsHitTesting(false)
-            }
-            .overlay {
-                Circle()
-                    .strokeBorder(
-                        isSelected ? ColorInvoColor.primary : .clear,
-                        lineWidth: 4
-                    )
-                    .allowsHitTesting(false)
-            }
-        }
-        .overlay(alignment: .topTrailing) {
-            if isSelected {
-                SelectionCheckmark()
-            }
-        }
-        .frame(width: 44, height: 44)
-        .contentShape(Rectangle())
-    }
-}
-
-private struct SelectionCheckmark: View {
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(ColorInvoColor.primary)
-
-            Image(systemName: "checkmark")
-                .font(.system(size: 8, weight: .bold))
-                .foregroundStyle(.white)
-        }
-        .frame(width: 16, height: 16)
-        .accessibilityHidden(true)
+        .accessibilityLabel(Text(LocalizedStringKey(accessibilityText)))
     }
 }
 
@@ -651,6 +774,15 @@ private struct ColorInvoTextStyleModifier: ViewModifier {
 private extension View {
     nonisolated func colorInvoText(_ style: ColorInvoTextStyle) -> some View {
         modifier(ColorInvoTextStyleModifier(style: style))
+    }
+
+    nonisolated func selectionCard(isSelected: Bool, radius: CGFloat) -> some View {
+        background(isSelected ? ColorInvoColor.primarySoft : ColorInvoColor.surface, in: RoundedRectangle(cornerRadius: radius))
+            .overlay {
+                RoundedRectangle(cornerRadius: radius)
+                    .strokeBorder(isSelected ? ColorInvoColor.primary : ColorInvoColor.hairline, lineWidth: isSelected ? 2 : 1)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: radius))
     }
 
     nonisolated func colorInvoDisabledState(_ isDisabled: Bool) -> some View {
