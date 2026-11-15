@@ -35,6 +35,7 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
             perform(.palette(0))
             perform(.palette(2))
 
+            openCustomColors()
             let picker = control(identifier)
             XCTAssertTrue(picker.waitForExistence(timeout: 3), "\(identifier) should exist")
             scrollToHittable(picker)
@@ -88,9 +89,35 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
         app.buttons["setupBackButton"].tap()
         XCTAssertEqual(app.buttons["wallpaperPaletteOption.1"].value as? String, "selected")
         app.buttons["setupBackButton"].tap()
-        XCTAssertTrue(app.segmentedControls["decorationPicker"].buttons["極簡"].isSelected)
+        XCTAssertEqual(app.buttons["decorationOption.none"].value as? String, "selected")
         app.buttons["setupBackButton"].tap()
         XCTAssertEqual(field.value as? String, "ABC1234")
+    }
+
+    func testStyleCardsAreVisibleAndTextToggleKeepsSelectedStyle() {
+        launchShowcaseApp()
+        app.buttons["setupNextButton"].tap()
+        for style in ["cat", "wave", "none"] {
+            let card = app.buttons["decorationOption.\(style)"]
+            XCTAssertTrue(card.exists)
+            XCTAssertTrue(card.isHittable)
+            XCTAssertGreaterThanOrEqual(card.frame.height, 80)
+        }
+        selectDecoration("顏料")
+        let toggle = app.switches["showsBarcodeValueToggle"]
+        let originalValue = toggle.value as? String
+        toggle.tap()
+        XCTAssertNotEqual(toggle.value as? String, originalValue, "The whole text-display row should toggle")
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        XCTAssertEqual(toggle.value as? String, originalValue, "Tapping the native switch should toggle exactly once")
+        XCTAssertEqual(app.buttons["decorationOption.wave"].value as? String, "selected")
+        openColors()
+        XCTAssertFalse(control("backgroundColorPicker").exists)
+        openCustomColors()
+        XCTAssertTrue(control("backgroundColorPicker").exists)
+        app.buttons["setupNextButton"].tap()
+        app.buttons["setupNextButton"].tap()
+        XCTAssertTrue(app.buttons["decorationOption.wave"].exists, "Edit style should return directly to the style choices")
     }
 
     private func launchShowcaseApp() {
@@ -126,7 +153,7 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
         if app.textFields["carrierCodeField"].exists {
             app.buttons["setupNextButton"].tap()
         }
-        if app.segmentedControls["decorationPicker"].exists {
+        if app.buttons["decorationOption.cat"].exists {
             app.buttons["setupNextButton"].tap()
         }
     }
@@ -137,20 +164,28 @@ final class ColorInvoControlInteractionUITests: XCTestCase {
         } else if app.buttons["wallpaperPaletteOption.0"].exists {
             app.buttons["setupBackButton"].tap()
         }
-        let picker = app.segmentedControls["decorationPicker"]
-        XCTAssertTrue(picker.waitForExistence(timeout: 3), "decoration picker should exist")
-
-        let button = picker.buttons[label]
-        XCTAssertTrue(button.waitForExistence(timeout: 3), "\(label) decoration should exist")
+        let style = ["貓貓": "cat", "顏料": "wave", "極簡": "none"][label]!
+        let button = app.buttons["decorationOption.\(style)"]
+        XCTAssertTrue(button.waitForExistence(timeout: 3), "\(label) style card should exist")
         scrollToHittable(button)
-        XCTAssertTrue(button.isHittable, "\(label) decoration should be hittable")
+        XCTAssertTrue(button.isHittable, "The entire \(label) card should be hittable")
         button.tap()
+        XCTAssertTrue(button.waitForValue("selected", timeout: 3))
+    }
+
+    private func openCustomColors() {
+        if !control("backgroundColorPicker").exists {
+            let disclosure = app.buttons["自訂顏色"]
+            scrollToHittable(disclosure)
+            disclosure.tap()
+        }
     }
 
     private func assertCoreControlsHittable(
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
+        openCustomColors()
         let identifiers = ["backgroundColorPicker", "barColorPicker"]
 
         for identifier in identifiers {

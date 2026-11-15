@@ -189,6 +189,10 @@ final class CarrierEditorModel: ObservableObject {
         scheduleSettingsSave()
     }
 
+    func useClassicPalette() {
+        updatePalette(.classic)
+    }
+
     func updateBackgroundColor(_ color: Color) {
         updatePalette(draftPalette.replacing(backgroundColor: RGBAColor(color: color)))
     }
